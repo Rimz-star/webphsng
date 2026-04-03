@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gmail Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0f14;
+  --surface: #13161e;
+  --surface2: #1a1e29;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text: #e8eaf0;
+  --muted: #6b7280;
+  --accent: #4f8ef7;
+  --accent2: #3b6fd4;
+  --success: #22c55e;
+  --success-bg: rgba(34,197,94,0.1);
+  --danger: #ef4444;
+  --danger-bg: rgba(239,68,68,0.1);
+  --gold: #f5c518;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:2rem 1rem 4rem}
+a{color:inherit}
+.container{max-width:900px;margin:0 auto}
+
+/* HEADER */
+header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2rem;gap:1rem;flex-wrap:wrap}
+.header-left{flex:1;min-width:0}
+.page-title{font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.2;cursor:default;display:flex;align-items:center;gap:8px}
+.title-text{outline:none;background:none;border:none;color:var(--text);font-family:'Sora',sans-serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;width:100%;cursor:default;pointer-events:none}
+.title-text[contenteditable="true"]{pointer-events:auto;cursor:text;border-bottom:2px solid var(--accent);padding-bottom:2px}
+.edit-title-btn{display:none;background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:2px 6px;border-radius:4px;transition:color 0.15s}
+.edit-title-btn:hover{color:var(--accent)}
+.page-sub{font-size:13px;color:var(--muted);margin-top:5px}
+
+.admin-badge{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border2);border-radius:99px;padding:6px 14px 6px 8px}
+.admin-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#4f8ef7,#a855f7);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff}
+.admin-name{font-size:13px;font-weight:500}
+.admin-gmail{font-size:11px;color:var(--muted)}
+.btn-logout{background:none;border:1px solid var(--border2);border-radius:6px;padding:3px 10px;font-size:11px;color:var(--muted);cursor:pointer;margin-left:4px;transition:all 0.15s}
+.btn-logout:hover{color:var(--danger);border-color:var(--danger)}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem}
+@media(max-width:500px){.stats{grid-template-columns:1fr 1fr}}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px}
+.stat-value{font-size:24px;font-weight:700;font-family:'DM Mono',monospace}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1.25rem}
+.card-title{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:1.2rem}
+
+/* FORM */
+.form-row{display:grid;grid-template-columns:1fr 200px auto;gap:12px;align-items:end}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}}
+.form-group label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em}
+.form-group input{width:100%;height:42px;padding:0 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;font-size:14px;color:var(--text);font-family:'Sora',sans-serif;outline:none;transition:border-color 0.15s}
+.form-group input:focus{border-color:var(--accent)}
+.form-group input::placeholder{color:var(--muted)}
+.btn-add{height:42px;padding:0 22px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;font-family:'Sora',sans-serif;cursor:pointer;white-space:nowrap;transition:background 0.15s,transform 0.1s}
+.btn-add:hover{background:var(--accent2)}
+.btn-add:active{transform:scale(0.97)}
+
+/* ALERTS */
+.alert{display:none;font-size:13px;border-radius:8px;padding:10px 14px;margin-top:12px}
+.alert-success{background:var(--success-bg);color:var(--success);border:1px solid rgba(34,197,94,0.25)}
+.alert-error{background:var(--danger-bg);color:var(--danger);border:1px solid rgba(239,68,68,0.25)}
+
+/* TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid var(--border)}
+tbody td{padding:13px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr{transition:background 0.12s}
+tbody tr:hover td{background:var(--surface2)}
+.no-col{color:var(--muted);font-family:'DM Mono',monospace;font-size:13px}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#4f8ef7,#a855f7);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;margin-right:10px}
+.name-cell{display:flex;align-items:center}
+.name-text{font-weight:500;font-size:14px}
+.gmail-text{color:var(--muted);font-size:13px;font-family:'DM Mono',monospace}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(79,142,247,0.15);color:var(--accent);font-family:'DM Mono',monospace}
+.time-text{color:var(--muted);font-size:13px;font-family:'DM Mono',monospace}
+.btn-del{display:none;align-items:center;gap:4px;background:none;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:5px 12px;font-size:12px;font-weight:500;font-family:'Sora',sans-serif;color:var(--danger);cursor:pointer;transition:all 0.12s}
+.btn-del:hover{background:var(--danger-bg)}
+.btn-del.visible{display:inline-flex}
+.empty-row td{text-align:center;padding:3rem;color:var(--muted);font-size:14px}
+.empty-icon{font-size:30px;display:block;margin-bottom:10px}
+
+/* MODAL OVERLAY */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:2rem;width:100%;max-width:400px;transform:translateY(20px) scale(0.97);transition:transform 0.25s;position:relative}
+.modal-overlay.open .modal{transform:translateY(0) scale(1)}
+.modal-close{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px;line-height:1}
+.modal-close:hover{color:var(--text)}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:6px}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:1.5rem}
+.modal .form-group{margin-bottom:14px}
+.modal .form-group:last-of-type{margin-bottom:20px}
+.btn-login{width:100%;height:44px;background:var(--accent);color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:600;font-family:'Sora',sans-serif;cursor:pointer;transition:background 0.15s}
+.btn-login:hover{background:var(--accent2)}
+.modal-err{font-size:13px;color:var(--danger);margin-top:10px;text-align:center;min-height:20px}
+
+/* SECRET TRIGGER */
+.secret-btn{position:fixed;bottom:16px;right:16px;width:44px;height:44px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);opacity:0.18;cursor:pointer;transition:opacity 0.2s;z-index:99;display:flex;align-items:center;justify-content:center;font-size:18px;-webkit-tap-highlight-color:transparent}
+.secret-btn:hover,.secret-btn:active{opacity:0.55}
+
+/* ADMIN PANEL EXTRA */
+.admin-controls{display:none;gap:10px;flex-wrap:wrap;margin-bottom:1rem}
+.admin-controls.visible{display:flex}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <div class="page-title">
+        <span id="title-display" contenteditable="false" class="title-text" spellcheck="false">Gmail Tracker</span>
+        <button class="edit-title-btn" id="edit-title-btn" title="Edit judul" onclick="toggleEditTitle()">✏️</button>
+      </div>
+      <p class="page-sub" id="header-sub">Kelola daftar Gmail dan result secara efisien</p>
+    </div>
+    <div id="admin-badge" style="display:none">
+      <div class="admin-badge">
+        <div class="admin-avatar" id="badge-avatar">A</div>
+        <div>
+          <div class="admin-name" id="badge-name">Admin</div>
+          <div class="admin-gmail" id="badge-gmail">-</div>
+        </div>
+        <button class="btn-logout" onclick="logout()">Keluar</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Total Gmail</div><div class="stat-value" id="stat-total">0</div></div>
+    <div class="stat"><div class="stat-label">Total Result</div><div class="stat-value" id="stat-result">0</div></div>
+    <div class="stat"><div class="stat-label">Est. Selesai</div><div class="stat-value" id="stat-time" style="font-size:16px;padding-top:4px">—</div></div>
+  </div>
+
+  <!-- ADD FORM -->
+  <div class="card">
+    <p class="card-title">Tambah Gmail</p>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Alamat Gmail</label>
+        <input type="email" id="gmail-input" placeholder="contoh@gmail.com" oninput="clearMsg()">
+      </div>
+      <div class="form-group">
+        <label>Jumlah Result (100–1000)</label>
+        <input type="number" id="result-input" min="100" max="1000" step="100" value="100">
+      </div>
+      <div class="form-group">
+        <label style="visibility:hidden">x</label>
+        <button class="btn-add" onclick="addEntry()">+ Tambah</button>
+      </div>
+    </div>
+    <div class="alert alert-success" id="msg-success">✓ Gmail berhasil ditambahkan!</div>
+    <div class="alert alert-error" id="msg-err"></div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="card">
+    <p class="card-title">Daftar Gmail</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:50px">No.</th>
+            <th>Nama</th>
+            <th>Gmail</th>
+            <th>Jumlah Result</th>
+            <th>Perkiraan Selesai</th>
+            <th id="del-col" style="width:100px;display:none"></th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr class="empty-row">
+            <td colspan="6"><span class="empty-icon">📭</span>Belum ada data. Tambahkan Gmail di atas.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- SECRET BUTTON -->
+<button class="secret-btn" id="secret-btn" title="" onclick="openAdminModal()">🔒</button>
+
+<!-- ADMIN LOGIN MODAL -->
+<div class="modal-overlay" id="admin-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAdminModal()">✕</button>
+    <div class="modal-title">🔐 Panel Admin</div>
+    <div class="modal-sub">Masuk dengan akun admin untuk mengakses kontrol penuh.</div>
+    <div class="form-group">
+      <label>Nama Admin</label>
+      <input type="text" id="admin-name-input" placeholder="Nama lengkap Anda">
+    </div>
+    <div class="form-group">
+      <label>Gmail Admin</label>
+      <input type="email" id="admin-gmail-input" placeholder="admin@gmail.com">
+    </div>
+    <div class="form-group">
+      <label>Password Rahasia</label>
+      <input type="password" id="admin-pass-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-login" onclick="doLogin()">Masuk sebagai Admin</button>
+    <div class="modal-err" id="modal-err"></div>
+  </div>
+</div>
+
+<script>
+/* ── CONFIG ── ubah password di sini ────────────────────── */
+const SECRET_PASSWORD = 'MAHALSEH12';
+/* ────────────────────────────────────────────────────────── */
+
+let entries = [];
+let isAdmin = false;
+let adminInfo = { name: '', gmail: '' };
+let editingTitle = false;
+
+/* ── HELPERS ── */
+function firstName(email) {
+  const local = email.split('@')[0];
+  const cleaned = local.replace(/[._\-]+/g,' ').replace(/\d/g,'').trim();
+  const first = cleaned.split(' ')[0] || local;
+  return first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
+}
+function initials(name) { return name ? name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() : '?'; }
+function estimateTime(count) {
+  const s = Math.round(count * 0.8);
+  if (s < 60) return s + ' dtk';
+  const m = Math.floor(s/60), r = s%60;
+  return r ? m+'m '+r+'s' : m+' menit';
+}
+function totalTimeStr(sec) {
+  if (!sec) return '—';
+  if (sec < 60) return sec + ' dtk';
+  const m = Math.floor(sec/60), s = sec%60;
+  if (m < 60) return s ? m+'m '+s+'s' : m+' menit';
+  const h = Math.floor(m/60), rm = m%60;
+  return h+'j '+rm+'m';
+}
+function validGmail(email) { return /^[a-zA-Z0-9._%+\-]+@gmail\.com$/.test(email.trim()); }
+
+/* ── ALERTS ── */
+function clearMsg() {
+  document.getElementById('msg-success').style.display='none';
+  document.getElementById('msg-err').style.display='none';
+}
+function showErr(msg) {
+  const el=document.getElementById('msg-err');
+  el.textContent='✕ '+msg; el.style.display='block';
+  document.getElementById('msg-success').style.display='none';
+}
+function showSuccess(msg) {
+  const el=document.getElementById('msg-success');
+  el.textContent='✓ '+msg; el.style.display='block';
+  document.getElementById('msg-err').style.display='none';
+  setTimeout(()=>el.style.display='none', 3000);
+}
+
+/* ── ADD ENTRY ── */
+function addEntry() {
+  const email=document.getElementById('gmail-input').value.trim().toLowerCase();
+  const count=parseInt(document.getElementById('result-input').value);
+  if (!email) { showErr('Alamat Gmail tidak boleh kosong.'); return; }
+  if (!validGmail(email)) { showErr('Format Gmail tidak valid. Gunakan nama@gmail.com'); return; }
+  if (isNaN(count)||count<100||count>1000) { showErr('Jumlah result harus antara 100–1000.'); return; }
+  if (entries.find(e=>e.email===email)) { showErr('Gmail ini sudah ada di daftar.'); return; }
+  entries.push({ email, count });
+  showSuccess('Gmail berhasil ditambahkan!');
+  document.getElementById('gmail-input').value='';
+  document.getElementById('result-input').value='100';
+  document.getElementById('gmail-input').focus();
+  renderAll();
+}
+
+function deleteEntry(email) {
+  if (!isAdmin) return;
+  entries=entries.filter(e=>e.email!==email);
+  renderAll();
+}
+
+/* ── RENDER ── */
+function renderAll() { renderTable(); renderStats(); }
+
+function renderStats() {
+  const totalResult=entries.reduce((a,e)=>a+e.count,0);
+  const totalSec=Math.round(totalResult*0.8);
+  document.getElementById('stat-total').textContent=entries.length;
+  document.getElementById('stat-result').textContent=totalResult.toLocaleString('id-ID');
+  document.getElementById('stat-time').textContent=totalTimeStr(totalSec);
+}
+
+function renderTable() {
+  const tbody=document.getElementById('table-body');
+  document.getElementById('del-col').style.display = isAdmin ? 'table-cell' : 'none';
+  if (!entries.length) {
+    tbody.innerHTML='<tr class="empty-row"><td colspan="6"><span class="empty-icon">📭</span>Belum ada data. Tambahkan Gmail di atas.</td></tr>';
+    return;
+  }
+  tbody.innerHTML=entries.map((e,i)=>`
+    <tr>
+      <td class="no-col">${String(i+1).padStart(2,'0')}</td>
+      <td><div class="name-cell"><div class="avatar">${initials(firstName(e.email))}</div><span class="name-text">${firstName(e.email)}</span></div></td>
+      <td class="gmail-text">${e.email}</td>
+      <td><span class="badge">${e.count.toLocaleString('id-ID')}</span></td>
+      <td class="time-text">${estimateTime(e.count)}</td>
+      <td>${isAdmin?`<button class="btn-del visible" onclick="deleteEntry('${e.email}')">🗑 Hapus</button>`:'<span></span>'}</td>
+    </tr>
+  `).join('');
+}
+
+/* ── ADMIN MODAL ── */
+function openAdminModal() {
+  if (isAdmin) return;
+  document.getElementById('admin-modal').classList.add('open');
+  document.getElementById('modal-err').textContent='';
+  document.getElementById('admin-name-input').focus();
+}
+function closeAdminModal() {
+  document.getElementById('admin-modal').classList.remove('open');
+}
+function doLogin() {
+  const name=document.getElementById('admin-name-input').value.trim();
+  const gmail=document.getElementById('admin-gmail-input').value.trim().toLowerCase();
+  const pass=document.getElementById('admin-pass-input').value;
+  const errEl=document.getElementById('modal-err');
+  if (!name) { errEl.textContent='Nama admin tidak boleh kosong.'; return; }
+  if (!validGmail(gmail)) { errEl.textContent='Format Gmail admin tidak valid.'; return; }
+  if (pass !== SECRET_PASSWORD) { errEl.textContent='Password salah. Coba lagi.'; return; }
+  isAdmin=true;
+  adminInfo={ name, gmail };
+  closeAdminModal();
+  applyAdminUI();
+}
+function logout() {
+  isAdmin=false;
+  adminInfo={ name:'', gmail:'' };
+  removeAdminUI();
+}
+
+/* ── ADMIN UI ── */
+function applyAdminUI() {
+  document.getElementById('admin-badge').style.display='block';
+  document.getElementById('badge-name').textContent=adminInfo.name;
+  document.getElementById('badge-gmail').textContent=adminInfo.gmail;
+  document.getElementById('badge-avatar').textContent=initials(adminInfo.name);
+  document.getElementById('edit-title-btn').style.display='inline-flex';
+  document.getElementById('header-sub').textContent='Mode Admin aktif — semua fitur tersedia';
+  renderTable();
+}
+function removeAdminUI() {
+  document.getElementById('admin-badge').style.display='none';
+  document.getElementById('edit-title-btn').style.display='none';
+  if (editingTitle) { endEditTitle(false); }
+  document.getElementById('header-sub').textContent='Kelola daftar Gmail dan result secara efisien';
+  renderTable();
+}
+
+/* ── EDIT TITLE ── */
+function toggleEditTitle() {
+  if (!isAdmin) return;
+  if (!editingTitle) startEditTitle(); else endEditTitle(true);
+}
+function startEditTitle() {
+  const el=document.getElementById('title-display');
+  el.contentEditable='true';
+  el.focus();
+  editingTitle=true;
+  document.getElementById('edit-title-btn').textContent='💾';
+  const range=document.createRange(), sel=window.getSelection();
+  range.selectNodeContents(el); sel.removeAllRanges(); sel.addRange(range);
+}
+function endEditTitle(save) {
+  const el=document.getElementById('title-display');
+  el.contentEditable='false';
+  editingTitle=false;
+  document.getElementById('edit-title-btn').textContent='✏️';
+  if (!save || !el.textContent.trim()) el.textContent=el.dataset.prev||'Gmail Tracker';
+  else document.title=el.textContent.trim()+' — Admin';
+}
+document.addEventListener('keydown', e=>{
+  if (e.key==='Escape') {
+    if (document.getElementById('admin-modal').classList.contains('open')) closeAdminModal();
+    if (editingTitle) endEditTitle(false);
+  }
+  if (e.key==='Enter' && editingTitle) { e.preventDefault(); endEditTitle(true); }
+});
+document.getElementById('title-display').addEventListener('focus', ()=>{
+  document.getElementById('title-display').dataset.prev=document.getElementById('title-display').textContent;
+});
+document.getElementById('gmail-input').addEventListener('keydown',e=>{ if(e.key==='Enter') addEntry(); });
+document.getElementById('admin-modal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeAdminModal(); });
+
+renderAll();
+</script>
+</body>
+</html>

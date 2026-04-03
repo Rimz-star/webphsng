@@ -105,7 +105,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
   display:flex;align-items:center;gap:10px;
   padding:10px;border-radius:12px;
   background:var(--panel);border:1px solid var(--border);
-  cursor:pointer;overflow:hidden;
+  cursor:default;overflow:hidden;
   transition:border-color .18s;
   width:100%;
 }
@@ -115,7 +115,9 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
   background:linear-gradient(135deg,var(--indigo),var(--purple));
   display:flex;align-items:center;justify-content:center;
   font-size:11px;font-weight:700;color:#fff;flex-shrink:0;
+  overflow:hidden;position:relative;
 }
+.user-av img{width:100%;height:100%;object-fit:cover}
 .user-info{overflow:hidden;opacity:0;transition:opacity .2s .05s;min-width:0}
 .sidebar:hover .user-info,.sidebar.expanded .user-info{opacity:1}
 .user-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -209,7 +211,8 @@ tbody tr:last-child td{border-bottom:none}
 tbody tr{transition:background .1s}
 tbody tr:hover td{background:rgba(255,255,255,.02)}
 .mono{font-family:'Space Mono',monospace;font-size:12px}
-.av{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--purple));display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;margin-right:10px;flex-shrink:0}
+.av{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--purple));display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;margin-right:10px;flex-shrink:0;overflow:hidden;position:relative}
+.av img{width:100%;height:100%;object-fit:cover}
 .name-cell{display:flex;align-items:center}
 .chip{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11.5px;font-weight:700;background:rgba(79,124,255,.1);color:var(--cyan);font-family:'Space Mono',monospace;border:1px solid rgba(79,124,255,.18)}
 .empty-row td{text-align:center;padding:3rem;color:var(--muted)}
@@ -319,7 +322,7 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 
 /* ════ ACCOUNT PAGE ════ */
 .account-card{max-width:520px}
-.acct-av-wrap{display:flex;align-items:center;gap:18px;margin-bottom:24px}
+.acct-av-wrap{display:flex;align-items:center;gap:18px;margin-bottom:24px;position:relative}
 .acct-av-big{
   width:72px;height:72px;border-radius:20px;
   background:linear-gradient(135deg,var(--indigo),var(--purple));
@@ -327,8 +330,19 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
   font-size:26px;font-weight:800;color:#fff;
   box-shadow:0 0 30px rgba(99,102,241,.3);
   flex-shrink:0;cursor:pointer;transition:transform .2s;
+  overflow:hidden;position:relative;
 }
+.acct-av-big img{width:100%;height:100%;object-fit:cover}
 .acct-av-big:hover{transform:scale(1.04)}
+.acct-av-edit{
+  position:absolute;bottom:8px;right:8px;
+  width:28px;height:28px;border-radius:50%;
+  background:var(--blue);color:#fff;border:none;
+  font-size:14px;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;
+  transition:all .15s;box-shadow:0 2px 8px rgba(0,0,0,.3);
+}
+.acct-av-edit:hover{background:var(--blue2);transform:scale(1.1)}
 .acct-av-info{flex:1}
 .acct-name-disp{font-size:20px;font-weight:800;margin-bottom:2px}
 .acct-role-disp{font-size:12px;color:var(--muted)}
@@ -401,6 +415,35 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 .anim-entry > *:nth-child(3){animation-delay:.14s}
 .anim-entry > *:nth-child(4){animation-delay:.19s}
 .anim-entry > *:nth-child(5){animation-delay:.24s}
+
+/* ── PROFILE UPLOAD MODAL ── */
+.profile-upload-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);z-index:1001;align-items:center;justify-content:center}
+.profile-upload-modal.show{display:flex}
+.profile-upload-box{
+  background:var(--panel);border:1px solid var(--border2);
+  border-radius:20px;padding:24px;width:100%;max-width:380px;
+  text-align:center;animation:panelIn .25s ease both;
+}
+.profile-upload-title{font-size:16px;font-weight:700;margin-bottom:8px}
+.profile-upload-sub{font-size:12px;color:var(--text2);margin-bottom:20px}
+.profile-preview{
+  width:120px;height:120px;border-radius:16px;margin:0 auto 20px;
+  background:linear-gradient(135deg,var(--indigo),var(--purple));
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;position:relative;border:3px solid var(--blue);
+}
+.profile-preview img{width:100%;height:100%;object-fit:cover}
+.profile-upload-zone{
+  border:2px dashed var(--border2);border-radius:12px;padding:20px;
+  cursor:pointer;transition:all .2s;background:var(--panel2);
+}
+.profile-upload-zone:hover{border-color:var(--blue);background:rgba(79,124,255,.08)}
+.profile-upload-zone input{display:none}
+.profile-upload-icon{font-size:28px;margin-bottom:8px}
+.profile-upload-text{font-size:12px;color:var(--text2)}
+.profile-actions{display:flex;gap:10px;margin-top:18px;justify-content:center}
+.profile-remove-btn{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.profile-remove-btn:hover{background:var(--red)}
 </style>
 </head>
 <body>
@@ -449,11 +492,14 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
       </button>
     </div>
     <div class="nav-section" style="margin-top:8px">
-      <div class="user-pill" onclick="openAdminModal()" id="user-pill">
-        <div class="user-av" id="user-av-initials">?</div>
+      <div class="user-pill" id="user-pill">
+        <div class="user-av" id="user-av-initials">
+          <span id="user-av-text">?</span>
+          <img id="user-av-img" src="" alt="" style="display:none">
+        </div>
         <div class="user-info">
           <div class="user-name" id="user-display-name">Tamu</div>
-          <div class="user-role" id="user-display-role">Klik untuk login</div>
+          <div class="user-role" id="user-display-role">Pengguna</div>
         </div>
       </div>
     </div>
@@ -605,7 +651,11 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
       </div>
       <div class="card account-card">
         <div class="acct-av-wrap">
-          <div class="acct-av-big" id="acct-av-big" title="Klik untuk ganti emoji">👤</div>
+          <div class="acct-av-big" id="acct-av-big" title="Klik untuk ganti foto">
+            <span id="acct-av-text">👤</span>
+            <img id="acct-av-img" src="" alt="" style="display:none">
+          </div>
+          <button class="acct-av-edit" onclick="openProfileUpload()" title="Ubah foto profil">✏️</button>
           <div class="acct-av-info">
             <div class="acct-name-disp" id="acct-name-disp">Tamu</div>
             <div class="acct-role-disp" id="acct-role-disp">Pengguna Biasa</div>
@@ -688,8 +738,8 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 </main>
 </div><!-- /app -->
 
-<!-- ── SECRET BUTTON ── -->
-<button class="secret-btn" id="secret-btn" onclick="openAdminModal()">🔒</button>
+<!-- ── SECRET BUTTON (ADMIN LOGIN ONLY) ── -->
+<button class="secret-btn" id="secret-btn" onclick="openAdminModal()" title="Login Admin">🔒</button>
 
 <!-- ── ADMIN LOGIN MODAL ── -->
 <div class="overlay" id="admin-overlay">
@@ -703,6 +753,29 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
     <div class="fg"><label>Password</label><input type="password" id="m-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <button class="btn btn-primary" style="width:100%;margin-top:16px;height:46px" onclick="doLogin()">Masuk sebagai Admin</button>
     <div class="modal-err" id="modal-err"></div>
+  </div>
+</div>
+
+<!-- ── PROFILE UPLOAD MODAL ── -->
+<div class="profile-upload-modal" id="profile-upload-modal">
+  <div class="profile-upload-box">
+    <button class="modal-close" onclick="closeProfileUpload()" style="position:absolute;top:12px;right:12px">✕</button>
+    <div class="profile-upload-title">Ubah Foto Profil</div>
+    <div class="profile-upload-sub">Pilih foto dari galeri perangkat Anda</div>
+    <div class="profile-preview" id="profile-preview">
+      <span id="profile-preview-text" style="font-size:40px">👤</span>
+      <img id="profile-preview-img" src="" alt="" style="display:none">
+    </div>
+    <label class="profile-upload-zone" for="profile-file-input">
+      <input type="file" id="profile-file-input" accept="image/*" onchange="handleProfileUpload(event)">
+      <div class="profile-upload-icon">📷</div>
+      <div class="profile-upload-text">Pilih Foto</div>
+    </label>
+    <div class="profile-actions">
+      <button class="btn btn-ghost btn-sm" onclick="closeProfileUpload()">Batal</button>
+      <button class="btn btn-danger btn-sm profile-remove-btn" id="profile-remove-btn" onclick="removeProfileImage()" style="display:none">🗑 Hapus</button>
+      <button class="btn btn-primary btn-sm" id="profile-save-btn" onclick="saveProfileImage()" style="display:none">💾 Simpan</button>
+    </div>
   </div>
 </div>
 
@@ -734,8 +807,9 @@ let activePage='tracker', selectedMethod=null;
 let timerInterval=null, timerTotal=0, timerLeft=0;
 let proofFile=null;
 let settings={timerMin:5,timerSec:0,adminEmail:'',ejsService:'',ejsTemplate:'',ejsPublicKey:'',qrImages:{}};
-let userData={displayName:'Tamu'};
+let userData={displayName:'Tamu',profileImage:null};
 let editingName=false;
+let tempProfileImage=null;
 
 /* ══ PERSISTENCE ══ */
 function save(){
@@ -820,12 +894,20 @@ function renderTable(){
   tbody.innerHTML=entries.map((e,i)=>`
     <tr>
       <td class="mono" style="color:var(--muted)">${pad(i+1)}</td>
-      <td><div class="name-cell"><div class="av">${initials(firstName(e.email))}</div><span style="font-weight:600">${firstName(e.email)}</span></div></td>
+      <td><div class="name-cell"><div class="av">${renderAvatar(firstName(e.email), userData.profileImage)}</div><span style="font-weight:600">${firstName(e.email)}</span></div></td>
       <td class="mono" style="color:var(--text2);font-size:12px">${e.email}</td>
       <td><span class="chip">${e.count.toLocaleString('id-ID')}</span></td>
       <td class="mono" style="color:var(--text2);font-size:12px">${estTime(e.count)}</td>
       <td>${isAdmin?`<button class="btn btn-danger btn-sm" onclick="delEntry(${e.id})">🗑 Hapus</button>`:''}</td>
     </tr>`).join('');
+}
+
+/* ══ AVATAR RENDERING ══ */
+function renderAvatar(name, profileImg){
+  if(profileImg){
+    return `<img src="${profileImg}" alt="${name}">`;
+  }
+  return `<span style="font-size:13px">${initials(name)}</span>`;
 }
 
 /* ══ DEPOSIT: METHOD GRID ══ */
@@ -984,7 +1066,22 @@ function renderAccountPage(){
   const n=isAdmin?adminInfo.name:userData.displayName;
   document.getElementById('acct-name-disp').textContent=n;
   document.getElementById('acct-name-val').textContent=n;
-  document.getElementById('acct-av-big').textContent=initials(n)||'?';
+  
+  // Render avatar with profile image support
+  const avBig=document.getElementById('acct-av-big');
+  const avText=document.getElementById('acct-av-text');
+  const avImg=document.getElementById('acct-av-img');
+  
+  if(userData.profileImage){
+    avText.style.display='none';
+    avImg.src=userData.profileImage;
+    avImg.style.display='block';
+  }else{
+    avText.style.display='block';
+    avText.textContent=initials(n)||'👤';
+    avImg.style.display='none';
+  }
+  
   document.getElementById('acct-status-val').textContent=isAdmin?'Admin':'Pengguna Biasa';
   document.getElementById('acct-role-disp').textContent=isAdmin?'Mode Admin Aktif':'Pengguna Biasa';
   document.getElementById('acct-gmail-row').style.display=isAdmin?'flex':'none';
@@ -1008,7 +1105,11 @@ function toggleEditName(){
       userData.displayName=newName;save();
       nameVal.textContent=newName;
       document.getElementById('acct-name-disp').textContent=newName;
-      document.getElementById('acct-av-big').textContent=initials(newName)||'?';
+      
+      // Update avatar initials if no profile image
+      if(!userData.profileImage){
+        document.getElementById('acct-av-text').textContent=initials(newName)||'👤';
+      }
       updateUserPill();
       toast('✓ Nama diperbarui!');
     }
@@ -1016,6 +1117,96 @@ function toggleEditName(){
     btn.textContent='✏️ Edit';
     editingName=false;
   }
+}
+
+/* ══ PROFILE IMAGE UPLOAD ══ */
+function openProfileUpload(){
+  // Show current profile in preview
+  const previewText=document.getElementById('profile-preview-text');
+  const previewImg=document.getElementById('profile-preview-img');
+  const removeBtn=document.getElementById('profile-remove-btn');
+  const saveBtn=document.getElementById('profile-save-btn');
+  
+  if(userData.profileImage){
+    previewText.style.display='none';
+    previewImg.src=userData.profileImage;
+    previewImg.style.display='block';
+    removeBtn.style.display='inline-flex';
+    saveBtn.style.display='none';
+    tempProfileImage=userData.profileImage;
+  }else{
+    previewText.style.display='block';
+    previewText.textContent=initials(userData.displayName)||'👤';
+    previewImg.style.display='none';
+    removeBtn.style.display='none';
+    saveBtn.style.display='none';
+    tempProfileImage=null;
+  }
+  
+  document.getElementById('profile-upload-modal').classList.add('show');
+}
+function closeProfileUpload(){
+  document.getElementById('profile-upload-modal').classList.remove('show');
+  document.getElementById('profile-file-input').value='';
+  tempProfileImage=null;
+}
+function handleProfileUpload(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  if(file.size>3*1024*1024){alert('File terlalu besar! Maks 3MB untuk foto profil.');return}
+  
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    tempProfileImage=ev.target.result;
+    
+    // Update preview
+    const previewText=document.getElementById('profile-preview-text');
+    const previewImg=document.getElementById('profile-preview-img');
+    const saveBtn=document.getElementById('profile-save-btn');
+    
+    previewText.style.display='none';
+    previewImg.src=tempProfileImage;
+    previewImg.style.display='block';
+    saveBtn.style.display='inline-flex';
+    
+    toast('✓ Foto dipilih. Klik Simpan untuk menerapkan.');
+  };
+  reader.readAsDataURL(file);
+}
+function removeProfileImage(){
+  tempProfileImage=null;
+  userData.profileImage=null;
+  save();
+  
+  // Update preview to show initials
+  const previewText=document.getElementById('profile-preview-text');
+  const previewImg=document.getElementById('profile-preview-img');
+  const removeBtn=document.getElementById('profile-remove-btn');
+  const saveBtn=document.getElementById('profile-save-btn');
+  
+  previewText.style.display='block';
+  previewText.textContent=initials(userData.displayName)||'👤';
+  previewImg.style.display='none';
+  removeBtn.style.display='none';
+  saveBtn.style.display='none';
+  
+  // Update UI immediately
+  updateUserPill();
+  renderAccountPage();
+  toast('✓ Foto profil dihapus');
+}
+function saveProfileImage(){
+  if(!tempProfileImage)return;
+  userData.profileImage=tempProfileImage;
+  save();
+  
+  // Update all avatar displays
+  updateUserPill();
+  renderAccountPage();
+  renderAll(); // Update table avatars
+  
+  closeProfileUpload();
+  toast('✓ Foto profil diperbarui!');
 }
 
 /* ══ ADMIN SETTINGS ══ */
@@ -1075,7 +1266,12 @@ function removeQr(id){
 }
 
 /* ══ ADMIN AUTH ══ */
-function openAdminModal(){if(isAdmin)return;document.getElementById('admin-overlay').classList.add('open');setTimeout(()=>document.getElementById('m-name').focus(),120)}
+function openAdminModal(){
+  // Admin login ONLY via secret button
+  if(isAdmin){toast('Anda sudah login sebagai admin');return;}
+  document.getElementById('admin-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('m-name').focus(),120);
+}
 function closeModal(){document.getElementById('admin-overlay').classList.remove('open')}
 function doLogin(){
   const name=document.getElementById('m-name').value.trim();
@@ -1100,9 +1296,23 @@ function applyAdmin(){
 }
 function updateUserPill(){
   const name=isAdmin?adminInfo.name:userData.displayName;
-  document.getElementById('user-av-initials').textContent=initials(name)||'?';
+  const avInitials=document.getElementById('user-av-initials');
+  const avText=document.getElementById('user-av-text');
+  const avImg=document.getElementById('user-av-img');
+  
+  // Update avatar with profile image support
+  if(userData.profileImage){
+    avText.style.display='none';
+    avImg.src=userData.profileImage;
+    avImg.style.display='block';
+  }else{
+    avText.style.display='block';
+    avText.textContent=initials(name)||'?';
+    avImg.style.display='none';
+  }
+  
   document.getElementById('user-display-name').textContent=name;
-  document.getElementById('user-display-role').textContent=isAdmin?'Admin':'Klik untuk login';
+  document.getElementById('user-display-role').textContent=isAdmin?'Admin':'Pengguna';
   document.getElementById('secret-btn').style.display=isAdmin?'none':'flex';
 }
 
@@ -1119,54 +1329,17 @@ function toast(msg){
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     if(document.getElementById('admin-overlay').classList.contains('open'))closeModal();
+    if(document.getElementById('profile-upload-modal').classList.contains('show'))closeProfileUpload();
     if(editingName)toggleEditName();
   }
   if(e.key==='Enter'&&editingName&&document.activeElement===document.getElementById('acct-name-input'))toggleEditName();
 });
 document.getElementById('gmail-input').addEventListener('keydown',e=>{if(e.key==='Enter')addEntry()});
 document.getElementById('admin-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal()});
+document.getElementById('profile-upload-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeProfileUpload()});
 
 /* ══ INIT ══ */
 load();renderAll();updateUserPill();renderDepositGrid();
-<script>
-  if(file.size > 2 * 1024 * 1024){
-    alert('Maksimal 2MB');
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = function(ev){
-    const base64 = ev.target.result;
-
-    if(isAdmin){
-      adminInfo.photo = base64;
-    } else {
-      userAccount.photo = base64;
-    }
-
-    save();
-    renderAccountPage();
-    updateUserPill();
-    toast('Foto berhasil diubah');
-  };
-  reader.readAsDataURL(file);
-}
-
-/* ===== PATCH ACCOUNT PAGE ===== */
-const oldRenderAccountPage = renderAccountPage;
-renderAccountPage = function(){
-  oldRenderAccountPage();
-
-  const n = isAdmin ? adminInfo.name : (isUserLoggedIn ? userAccount.name : 'Tamu');
-  const photo = isAdmin ? adminInfo.photo : userAccount.photo;
-
-  if(photo){
-    document.getElementById('acct-av-big').innerHTML =
-      `<img src="${photo}" style="width:100%;height:100%;border-radius:20px;object-fit:cover;">`;
-  } else {
-    document.getElementById('acct-av-big').textContent = initials(n);
-  }
-}
 </script>
 </body>
 </html>

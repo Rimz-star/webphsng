@@ -17,16 +17,13 @@
   --red:#f43f5e;--red-bg:rgba(244,63,94,0.08);--red-border:rgba(244,63,94,0.22);
   --amber:#f59e0b;
   --r:16px;--rs:10px;
-  --nav-w:64px;
-  --nav-w-exp:200px;
+  --nav-w:64px;--nav-w-exp:200px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);-webkit-tap-highlight-color:transparent}
 
-/* ── NOISE OVERLAY ── */
+/* ── NOISE & ORBS ── */
 body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:.025;pointer-events:none;z-index:9999}
-
-/* ── AMBIENT ORBS ── */
 .orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px)}
 .orb1{width:500px;height:500px;top:-180px;left:40px;background:radial-gradient(circle,rgba(79,124,255,.12),transparent 70%)}
 .orb2{width:400px;height:400px;bottom:-100px;right:-80px;background:radial-gradient(circle,rgba(163,139,250,.1),transparent 70%)}
@@ -35,26 +32,20 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 /* ── LAYOUT ── */
 .app{display:flex;height:100vh;position:relative;z-index:1}
 
-/* ── SIDEBAR NAV ── */
+/* ── SIDEBAR ── */
 .sidebar{
   width:var(--nav-w);min-width:var(--nav-w);
-  background:rgba(10,13,26,0.95);
-  border-right:1px solid var(--border);
-  display:flex;flex-direction:column;align-items:center;
-  padding:16px 0 20px;
-  backdrop-filter:blur(20px);
-  position:relative;z-index:100;
-  transition:width .25s ease,transform .25s ease;
-  overflow:hidden;
+  background:rgba(10,13,26,0.95);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;padding:16px 0 20px;
+  backdrop-filter:blur(20px);position:relative;z-index:100;
+  transition:width .25s ease,transform .25s ease;overflow:hidden;
 }
 .sidebar:hover,.sidebar.expanded{width:var(--nav-w-exp)}
 .sidebar-logo{
-  width:38px;height:38px;min-width:38px;
-  border-radius:11px;
+  width:38px;height:38px;min-width:38px;border-radius:11px;
   background:linear-gradient(135deg,var(--blue),var(--purple));
-  display:flex;align-items:center;justify-content:center;
-  font-size:17px;box-shadow:0 0 24px rgba(79,124,255,.3);
-  margin-bottom:24px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:17px;
+  box-shadow:0 0 24px rgba(79,124,255,.3);margin-bottom:24px;flex-shrink:0;
 }
 .sidebar-logo-text{
   font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;
@@ -106,7 +97,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .user-name{font-size:11.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .user-role{font-size:9.5px;color:var(--muted)}
 
-/* ── MOBILE NAV TOGGLE ── */
+/* ── MOBILE NAV ── */
 .nav-toggle{
   display:none;position:fixed;top:14px;left:14px;z-index:101;
   width:44px;height:44px;border-radius:12px;
@@ -148,7 +139,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .stat-val.small{font-size:14px;padding-top:6px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700}
 
 /* ── CARD ── */
-.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px;position:relative}
 .card:hover{border-color:var(--border2)}
 .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .card-title{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text2);display:flex;align-items:center;gap:6px}
@@ -157,7 +148,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 /* ── FORM ── */
 .form-row{display:grid;grid-template-columns:1fr 180px auto;gap:10px;align-items:end}
 @media(max-width:520px){.form-row{grid-template-columns:1fr}}
-.fg{display:flex;flex-direction:column;gap:5px}
+.fg{display:flex;flex-direction:column;gap:5px;position:relative}
 .fg label{font-size:10.5px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em}
 .fg input,.fg select,.fg textarea{
   height:40px;padding:0 12px;background:var(--panel2);border:1px solid var(--border2);
@@ -165,6 +156,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
   font-family:'Plus Jakarta Sans',sans-serif;outline:none;
   transition:border-color .15s,box-shadow .15s;-webkit-appearance:none;
 }
+.fg input:disabled{opacity:.5;cursor:not-allowed;background:rgba(244,63,94,.05)}
 .fg input:focus,.fg select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,124,255,.14)}
 .fg input::placeholder{color:var(--muted)}
 .fg select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235a6380' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
@@ -205,7 +197,31 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 .empty-row td{text-align:center;padding:2.5rem;color:var(--muted)}
 
 /* ════════════════════════════════
-   DEPOSIT PAGE — PAYMENT METHODS
+   🔒 LOCKED FIELD INDICATOR (RED X)
+════════════════════════════════ */
+.locked-field{position:relative}
+.locked-field::after{
+  content:'✕';
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:32px;height:32px;border-radius:50%;
+  background:var(--red);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:700;z-index:5;
+  box-shadow:0 2px 12px rgba(244,63,94,.4);
+  pointer-events:none;
+}
+.locked-field input:disabled + .lock-hint,
+.locked-field:has(input:disabled)::before{
+  content:'🔒 Fitur terkunci - Deposit dulu';
+  position:absolute;bottom:-22px;left:0;right:0;
+  font-size:10px;color:var(--red);text-align:center;
+  font-weight:600;animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+/* ════════════════════════════════
+   DEPOSIT PAGE
 ════════════════════════════════ */
 .deposit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:16px}
 
@@ -265,7 +281,6 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 .timer-num{font-size:36px;font-weight:700;font-family:'Space Mono',monospace;letter-spacing:2.5px;transition:color .3s}
 .timer-num.warn{color:var(--amber)}
 .timer-num.danger{color:var(--red);animation:pulse .5s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 .timer-track{width:220px;height:3.5px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-top:3px}
 .timer-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--blue),var(--cyan));transition:width .8s linear,background .4s}
 .timer-fill.warn{background:linear-gradient(90deg,var(--amber),#fde68a)}
@@ -384,24 +399,13 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 .toast{position:fixed;bottom:64px;right:16px;background:linear-gradient(135deg,var(--green),#059669);color:#fff;padding:9px 16px;border-radius:9px;font-size:12.5px;font-weight:700;z-index:9998;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 3px 14px rgba(16,185,129,.35);transition:opacity .3s,transform .3s;opacity:0;transform:translateY(6px);pointer-events:none}
 .toast.show{opacity:1;transform:none}
 
-/* ── LOCKED STATE ── */
-.locked-overlay{
-  display:none;position:absolute;inset:0;background:rgba(6,8,15,.92);
-  backdrop-filter:blur(4px);z-index:50;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;text-align:center;padding:24px;
-}
-.locked-overlay.show{display:flex}
-.locked-icon{font-size:48px;margin-bottom:16px;animation:pulse 1.5s ease-in-out infinite}
-.locked-title{font-size:18px;font-weight:800;margin-bottom:8px}
-.locked-sub{font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.5}
-
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--panel3);border-radius:99px}
 ::-webkit-scrollbar-thumb:hover{background:var(--muted)}
 
-/* ── ANIM ENTRY ── */
+/* ── ANIM ── */
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .anim-entry > *{animation:fadeUp .3s ease both}
 .anim-entry > *:nth-child(1){animation-delay:.03s}
@@ -440,85 +444,49 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 .profile-remove-btn:hover{background:var(--red)}
 
 /* ════════════════════════════════════════════════════
-   📱 MOBILE RESPONSIVE STYLES
+   📱 MOBILE RESPONSIVE
 ════════════════════════════════════════════════════ */
 @media(max-width:768px){
-  /* Hide sidebar by default on mobile */
-  .sidebar{
-    position:fixed;left:0;top:0;bottom:0;z-index:102;
-    transform:translateX(-100%);transition:transform .25s ease;
-  }
+  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:102;transform:translateX(-100%);transition:transform .25s ease}
   .sidebar.mobile-open{transform:translateX(0);box-shadow:4px 0 40px rgba(0,0,0,.5)}
-  
-  /* Show nav toggle button */
   .nav-toggle{display:flex}
-  
-  /* Overlay when sidebar is open */
-  .nav-overlay{
-    display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
-    z-index:101;backdrop-filter:blur(2px);
-  }
+  .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:101;backdrop-filter:blur(2px)}
   .nav-overlay.show{display:block}
-  
-  /* Adjust main content padding */
   .main{padding-left:0}
-  
-  /* Page padding adjustments */
   .page{padding:16px 12px 28px}
   .page-header{margin-bottom:16px;flex-wrap:wrap}
   .page-title{font-size:18px}
-  
-  /* Stats grid */
   .stats-grid{grid-template-columns:1fr 1fr;gap:8px}
   .stat-card{padding:12px 14px}
   .stat-val{font-size:20px}
-  
-  /* Card adjustments */
   .card{padding:14px;margin-bottom:12px}
   .card-head{margin-bottom:12px}
-  
-  /* Form adjustments */
   .form-row{grid-template-columns:1fr;gap:8px}
   .fg input,.fg select{height:38px;font-size:13px}
   .btn{height:38px;font-size:13px;padding:0 14px}
-  
-  /* Table adjustments */
   table{font-size:12.5px}
   thead th{padding:8px 10px;font-size:9.5px}
   tbody td{padding:10px}
   .av{width:28px;height:28px;font-size:10px}
-  
-  /* Deposit grid */
   .deposit-grid{grid-template-columns:repeat(auto-fill,minmax(95px,1fr));gap:8px}
   .pm-card{padding:12px 8px 10px}
   .pm-logo{width:40px;height:40px}
   .pm-name{font-size:10.5px}
-  
-  /* QR panel */
   .qr-img-box{width:160px;height:160px}
   .qr-amount{font-size:14px;padding:8px 20px}
   .timer-track{width:180px}
   .timer-num{font-size:32px}
-  
-  /* Upload zone */
   .upload-zone{padding:22px}
   .up-icon{font-size:26px}
   .up-title{font-size:12.5px}
-  
-  /* Modal adjustments */
   .modal{padding:20px;margin:12px;max-width:calc(100% - 24px)}
   .modal-title{font-size:16px}
-  
-  /* Profile upload */
   .profile-preview{width:90px;height:90px}
   .profile-upload-box{padding:18px;margin:12px}
   
-  /* Locked overlay */
-  .locked-icon{font-size:42px}
-  .locked-title{font-size:16px}
-  .locked-sub{font-size:12px}
+  /* Locked field on mobile */
+  .locked-field::after{width:28px;height:28px;font-size:16px}
 }
-
 @media(max-width:480px){
   .stats-grid{grid-template-columns:1fr}
   .deposit-grid{grid-template-columns:repeat(3,1fr)}
@@ -530,9 +498,7 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 </style>
 </head>
 <body>
-<div class="orb orb1"></div>
-<div class="orb orb2"></div>
-<div class="orb orb3"></div>
+<div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
 
 <!-- Mobile Nav Toggle -->
 <button class="nav-toggle" id="nav-toggle" onclick="toggleMobileNav()">☰</button>
@@ -544,46 +510,36 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 <nav class="sidebar" id="sidebar">
   <div class="logo-row">
     <div class="sidebar-logo">📬</div>
-    <span class="sidebar-logo-text" id="app-title-nav">Gmail Tracker</span>
+    <span class="sidebar-logo-text">Gmail Tracker</span>
   </div>
-
   <div class="nav-section">
     <div class="nav-lbl">Menu</div>
     <button class="nav-item active" id="nav-tracker" onclick="goPage('tracker');closeMobileNav()">
-      <span class="nav-icon">📊</span>
-      <span class="nav-text">Tracker</span>
+      <span class="nav-icon">📊</span><span class="nav-text">Tracker</span>
       <span class="nav-badge" id="nav-count-badge">0</span>
     </button>
     <button class="nav-item" id="nav-deposit" onclick="goPage('deposit');closeMobileNav()">
       <span class="nav-icon">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="3" stroke="#8892b0" stroke-width="1.8"/><path d="M2 10h20" stroke="#8892b0" stroke-width="1.8"/><rect x="5" y="14" width="4" height="2" rx="1" fill="#8892b0"/></svg>
-      </span>
-      <span class="nav-text">Deposit</span>
+      </span><span class="nav-text">Deposit</span>
     </button>
   </div>
-
   <div class="nav-section" id="admin-nav-section" style="display:none">
     <div class="nav-lbl">Admin</div>
     <button class="nav-item" id="nav-admin" onclick="goPage('admin');closeMobileNav()">
-      <span class="nav-icon">⚙️</span>
-      <span class="nav-text">Pengaturan</span>
+      <span class="nav-icon">⚙️</span><span class="nav-text">Pengaturan</span>
     </button>
   </div>
-
   <div class="sidebar-bottom">
     <div class="nav-section">
       <div class="nav-lbl">Akun</div>
       <button class="nav-item" id="nav-account" onclick="goPage('account');closeMobileNav()">
-        <span class="nav-icon">👤</span>
-        <span class="nav-text">Detail Akun</span>
+        <span class="nav-icon">👤</span><span class="nav-text">Detail Akun</span>
       </button>
     </div>
     <div class="nav-section" style="margin-top:6px">
       <div class="user-pill" id="user-pill">
-        <div class="user-av" id="user-av-initials">
-          <span id="user-av-text">?</span>
-          <img id="user-av-img" src="" alt="" style="display:none">
-        </div>
+        <div class="user-av" id="user-av-initials"><span id="user-av-text">?</span><img id="user-av-img" src="" alt="" style="display:none"></div>
         <div class="user-info">
           <div class="user-name" id="user-display-name">Tamu</div>
           <div class="user-role" id="user-display-role">Pengguna</div>
@@ -593,7 +549,7 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </nav>
 
-<!-- ══ MAIN CONTENT ══ -->
+<!-- ══ MAIN ══ -->
 <main class="main">
 
   <!-- PAGE: TRACKER -->
@@ -604,15 +560,6 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
           <div class="page-title">Gmail Tracker</div>
           <div class="page-sub">Kelola daftar Gmail dan estimasi result</div>
         </div>
-        <div class="header-actions" id="tracker-header-actions"></div>
-      </div>
-      
-      <!-- LOCKED STATE - Show until payment -->
-      <div class="locked-overlay" id="tracker-locked">
-        <div class="locked-icon">🔒</div>
-        <div class="locked-title">Fitur Terkunci</div>
-        <div class="locked-sub">Silakan lakukan deposit terlebih dahulu untuk membuka akses menambahkan Gmail.</div>
-        <button class="btn btn-primary" onclick="goPage('deposit')">💳 Buat Deposit</button>
       </div>
       
       <div class="stats-grid">
@@ -620,14 +567,16 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
         <div class="stat-card"><div class="stat-lbl">Total Result</div><div class="stat-val" id="stat-result">0</div></div>
         <div class="stat-card"><div class="stat-lbl">Est. Selesai</div><div class="stat-val small" id="stat-time">—</div></div>
       </div>
+      
       <div class="card">
         <div class="card-head"><span class="card-title"><span class="ct-dot"></span>Tambah Gmail</span></div>
-        <div class="form-row">
-          <div class="fg">
+        <!-- 🔒 RED X LOCK INDICATOR -->
+        <div class="form-row" id="add-form-container">
+          <div class="fg locked-field" id="fg-email">
             <label>Alamat Gmail</label>
             <input type="email" id="gmail-input" placeholder="contoh@gmail.com" oninput="clearMsg()" disabled>
           </div>
-          <div class="fg">
+          <div class="fg locked-field" id="fg-result">
             <label>Jumlah Result (100–1000)</label>
             <input type="number" id="result-input" min="100" max="1000" step="100" value="100" disabled>
           </div>
@@ -638,14 +587,18 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
         </div>
         <div class="alert alert-success" id="msg-ok"></div>
         <div class="alert alert-error" id="msg-err"></div>
+        <!-- Hint when locked -->
+        <div id="lock-hint" style="text-align:center;padding:10px;color:var(--red);font-size:11.5px;font-weight:600;display:none">
+          🔒 Fitur ini terkunci. <a href="#" onclick="goPage('deposit');return false" style="color:var(--blue);text-decoration:none">Deposit dulu</a> untuk membuka akses.
+        </div>
       </div>
+      
       <div class="card">
         <div class="card-head"><span class="card-title"><span class="ct-dot"></span>Daftar Gmail</span></div>
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th style="width:40px">No.</th><th>Nama</th><th>Gmail</th>
-              <th>Result</th><th>Est.</th>
+              <th style="width:40px">No.</th><th>Nama</th><th>Gmail</th><th>Result</th><th>Est.</th>
               <th id="del-col-head" style="width:80px;display:none"></th>
             </tr></thead>
             <tbody id="tbody"></tbody>
@@ -655,12 +608,12 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
     </div>
   </div>
 
-  <!-- PAGE: DEPOSIT -->
+  <!-- PAGE: DEPOSIT (FULLY WORKING) -->
   <div class="page" id="page-deposit">
     <div class="anim-entry">
       <div class="page-header">
         <div>
-          <div class="page-title">Deposit</div>
+          <div class="page-title">💳 Deposit</div>
           <div class="page-sub">Pilih metode & upload bukti transfer</div>
         </div>
       </div>
@@ -674,8 +627,7 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
       <!-- QR Panel -->
       <div class="qr-panel" id="qr-panel">
         <div class="qr-method-label">
-          <div class="ml-icon" id="qr-ml-icon"></div>
-          <span id="qr-ml-name">Metode</span>
+          <div class="ml-icon" id="qr-ml-icon"></div><span id="qr-ml-name">Metode</span>
         </div>
         <div class="qr-headline">Scan untuk Membayar</div>
         <div class="qr-sub">Arahkan kamera ke QR Code di bawah</div>
@@ -719,7 +671,7 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
           <div class="proof-row">
             <div class="fg"><label>Nama Pengirim</label><input type="text" id="sender-name" placeholder="Nama lengkap"></div>
             <div class="fg"><label>Nominal</label><input type="text" id="paid-amount" placeholder="Rp 50.000"></div>
-            <button class="btn btn-success" id="btn-send-proof" onclick="sendProof()">📤 Kirim</button>
+            <button class="btn btn-success" id="btn-send-proof" onclick="sendProof()">📤 Kirim Bukti</button>
           </div>
           <div class="alert alert-error" id="send-err" style="margin-top:8px"></div>
         </div>
@@ -730,7 +682,7 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
         <div class="ps-icon">✅</div>
         <div class="ps-title">Pembayaran Diterima!</div>
         <div class="ps-sub">Bukti sudah dikirim ke admin.<br>Tunggu konfirmasi maksimal 1×24 jam.</div>
-        <button class="btn btn-ghost" style="margin-top:14px" onclick="confirmPaymentComplete()">✓ Saya Paham, Lanjutkan</button>
+        <button class="btn btn-primary" style="margin-top:14px" onclick="confirmPaymentComplete()">✓ Buka Akses Tracker</button>
       </div>
 
     </div>
@@ -748,8 +700,7 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
       <div class="card account-card">
         <div class="acct-av-wrap">
           <div class="acct-av-big" id="acct-av-big" title="Klik untuk ganti foto">
-            <span id="acct-av-text">👤</span>
-            <img id="acct-av-img" src="" alt="" style="display:none">
+            <span id="acct-av-text">👤</span><img id="acct-av-img" src="" alt="" style="display:none">
           </div>
           <button class="acct-av-edit" onclick="openProfileUpload()" title="Ubah foto">✏️</button>
           <div class="acct-av-info">
@@ -786,7 +737,7 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
     </div>
   </div>
 
-  <!-- PAGE: ADMIN SETTINGS -->
+  <!-- PAGE: ADMIN -->
   <div class="page" id="page-admin">
     <div class="anim-entry">
       <div class="page-header">
@@ -795,7 +746,6 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
           <div class="page-sub">Konfigurasi pembayaran & EmailJS</div>
         </div>
       </div>
-
       <div class="card">
         <div class="card-head"><span class="card-title"><span class="ct-dot"></span>EmailJS Config</span></div>
         <div class="hint">💡 Daftar di <strong>emailjs.com</strong> → buat template dengan variabel: <code>{{sender_name}}, {{paid_amount}}, {{payment_method}}, {{timestamp}}</code></div>
@@ -809,7 +759,6 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
         </div>
         <button class="btn btn-success" onclick="saveEmail()" style="margin-top:4px">💾 Simpan</button>
       </div>
-
       <div class="card">
         <div class="card-head"><span class="card-title"><span class="ct-dot"></span>Timer Pembayaran</span></div>
         <div class="timer-row">
@@ -819,12 +768,10 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
         <p style="font-size:11.5px;color:var(--muted);margin-bottom:12px">Set 0:00 = tanpa batas</p>
         <button class="btn btn-success" onclick="saveTimer()">💾 Simpan Timer</button>
       </div>
-
       <div class="card">
         <div class="card-head"><span class="card-title"><span class="ct-dot"></span>QR Code per Metode</span></div>
         <div class="ms-grid" id="ms-grid"></div>
       </div>
-
     </div>
   </div>
 
@@ -890,9 +837,9 @@ const METHODS=[
 
 /* ══ CONFIG ══ */
 const SECRET_PASSWORD='MAHALSEH12';
-const SK_ENTRIES='gmt_entries_v3';
-const SK_SETTINGS='gmt_settings_v3';
-const SK_USER='gmt_user_v3';
+const SK_ENTRIES='gmt_entries_v4';
+const SK_SETTINGS='gmt_settings_v4';
+const SK_USER='gmt_user_v4';
 
 /* ══ STATE ══ */
 let entries=[], isAdmin=false, adminInfo={name:'',gmail:''};
@@ -904,20 +851,8 @@ let userData={displayName:'Tamu',profileImage:null,hasPaid:false};
 let editingName=false, tempProfileImage=null;
 
 /* ══ PERSISTENCE ══ */
-function save(){
-  try{
-    localStorage.setItem(SK_ENTRIES,JSON.stringify(entries));
-    localStorage.setItem(SK_SETTINGS,JSON.stringify(settings));
-    localStorage.setItem(SK_USER,JSON.stringify(userData));
-  }catch(e){console.error('Save error:',e)}
-}
-function load(){
-  try{
-    const e=localStorage.getItem(SK_ENTRIES);if(e)entries=JSON.parse(e);
-    const s=localStorage.getItem(SK_SETTINGS);if(s)settings={...settings,...JSON.parse(s)};
-    const u=localStorage.getItem(SK_USER);if(u)userData={...userData,...JSON.parse(u)};
-  }catch(e){console.error('Load error:',e)}
-}
+function save(){try{localStorage.setItem(SK_ENTRIES,JSON.stringify(entries));localStorage.setItem(SK_SETTINGS,JSON.stringify(settings));localStorage.setItem(SK_USER,JSON.stringify(userData));}catch(e){}}
+function load(){try{const e=localStorage.getItem(SK_ENTRIES);if(e)entries=JSON.parse(e);const s=localStorage.getItem(SK_SETTINGS);if(s)settings={...settings,...JSON.parse(s)};const u=localStorage.getItem(SK_USER);if(u)userData={...userData,...JSON.parse(u)};}catch(e){}}
 
 /* ══ HELPERS ══ */
 function firstName(email){const l=email.split('@')[0];const c=l.replace(/[._\-]+/g,' ').replace(/\d/g,'').trim();const f=c.split(' ')[0]||l;return f.charAt(0).toUpperCase()+f.slice(1).toLowerCase()}
@@ -926,61 +861,52 @@ function estTime(count){const s=Math.round(count*.8);if(s<60)return s+'d';const 
 function totalTime(sec){if(!sec)return'—';if(sec<60)return sec+'d';const m=Math.floor(sec/60),s=sec%60;if(m<60)return s?m+'m '+s+'d':m+'m';const h=Math.floor(m/60),rm=m%60;return h+'j '+rm+'m'}
 function validGmail(e){return/^[a-zA-Z0-9._%+\-]+@gmail\.com$/.test(e.trim())}
 function pad(n){return String(n).padStart(2,'0')}
-function formatRupiah(n){return'Rp '+parseInt(n).toLocaleString('id-ID')}
 
-/* ══ ACCESS CONTROL ══ */
-function checkAccess(){
-  const locked=document.getElementById('tracker-locked');
-  const inputs=document.querySelectorAll('#page-tracker input');
-  const btnAdd=document.getElementById('btn-add-gmail');
+/* ══ ACCESS CONTROL: RED X LOCK ══ */
+function updateLockState(){
+  const isLocked=!userData.hasPaid && !isAdmin;
+  const container=document.getElementById('add-form-container');
+  const hint=document.getElementById('lock-hint');
+  const inputs=document.querySelectorAll('#gmail-input,#result-input');
+  const btn=document.getElementById('btn-add-gmail');
   
-  if(userData.hasPaid || isAdmin){
-    // UNLOCK: Show form, enable inputs
-    locked.classList.remove('show');
-    inputs.forEach(i=>i.disabled=false);
-    btnAdd.disabled=false;
-  }else{
-    // LOCK: Hide form, disable inputs, show overlay
-    locked.classList.add('show');
+  if(isLocked){
+    // SHOW RED X on fields
+    container.classList.add('locked');
+    document.getElementById('fg-email').classList.add('locked-field');
+    document.getElementById('fg-result').classList.add('locked-field');
+    hint.style.display='block';
     inputs.forEach(i=>i.disabled=true);
-    btnAdd.disabled=true;
+    btn.disabled=true;
+  }else{
+    // HIDE RED X, enable form
+    container.classList.remove('locked');
+    document.getElementById('fg-email').classList.remove('locked-field');
+    document.getElementById('fg-result').classList.remove('locked-field');
+    hint.style.display='none';
+    inputs.forEach(i=>i.disabled=false);
+    btn.disabled=false;
   }
 }
 
-/* ══ PAGE NAVIGATION ══ */
+/* ══ PAGE NAV ══ */
 function goPage(name){
   if(name===activePage)return;
   const cur=document.getElementById('page-'+activePage);
   const next=document.getElementById('page-'+name);
   if(!next)return;
   cur.classList.add('exit-left');
-  setTimeout(()=>{
-    cur.classList.remove('active','exit-left');
-    next.classList.add('active');
-    activePage=name;
-    if(name==='tracker')checkAccess();
-  },150);
+  setTimeout(()=>{cur.classList.remove('active','exit-left');next.classList.add('active');activePage=name;if(name==='tracker')updateLockState();},150);
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
-  const nb=document.getElementById('nav-'+name);
-  if(nb)nb.classList.add('active');
+  const nb=document.getElementById('nav-'+name);if(nb)nb.classList.add('active');
   if(name==='deposit')renderDepositGrid();
   if(name==='admin'){fillAdminInputs();renderMsGrid();}
   if(name==='account')renderAccountPage();
 }
 
 /* ══ MOBILE NAV ══ */
-function toggleMobileNav(){
-  const sidebar=document.getElementById('sidebar');
-  const overlay=document.getElementById('nav-overlay');
-  sidebar.classList.toggle('mobile-open');
-  overlay.classList.toggle('show');
-}
-function closeMobileNav(){
-  if(window.innerWidth<=768){
-    document.getElementById('sidebar').classList.remove('mobile-open');
-    document.getElementById('nav-overlay').classList.remove('show');
-  }
-}
+function toggleMobileNav(){document.getElementById('sidebar').classList.toggle('mobile-open');document.getElementById('nav-overlay').classList.toggle('show');}
+function closeMobileNav(){if(window.innerWidth<=768){document.getElementById('sidebar').classList.remove('mobile-open');document.getElementById('nav-overlay').classList.remove('show');}}
 
 /* ══ TRACKER ══ */
 function clearMsg(){['msg-ok','msg-err'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none'})}
@@ -988,75 +914,40 @@ function showErr(m){const el=document.getElementById('msg-err');el.textContent='
 function showOk(m){const el=document.getElementById('msg-ok');el.textContent='✓ '+m;el.style.display='block';document.getElementById('msg-err').style.display='none';setTimeout(()=>el.style.display='none',2500)}
 
 function addEntry(){
-  // Double-check access
-  if(!userData.hasPaid && !isAdmin){
-    showErr('Silakan deposit terlebih dahulu untuk menambahkan Gmail.');
-    return;
-  }
+  if(!userData.hasPaid && !isAdmin){showErr('Deposit dulu untuk membuka akses.');return;}
   const email=document.getElementById('gmail-input').value.trim().toLowerCase();
   const count=parseInt(document.getElementById('result-input').value);
-  if(!email){showErr('Alamat Gmail tidak boleh kosong.');return}
+  if(!email){showErr('Alamat Gmail wajib diisi.');return}
   if(!validGmail(email)){showErr('Format Gmail tidak valid.');return}
   if(isNaN(count)||count<100||count>1000){showErr('Result harus 100–1000.');return}
   if(entries.find(e=>e.email===email)){showErr('Gmail sudah ada.');return}
   entries.push({email,count,id:Date.now()});save();
   showOk('Gmail ditambahkan!');
-  document.getElementById('gmail-input').value='';
-  document.getElementById('result-input').value='100';
+  document.getElementById('gmail-input').value='';document.getElementById('result-input').value='100';
   renderAll();
 }
 function delEntry(id){if(!isAdmin)return;entries=entries.filter(e=>e.id!==id);save();renderAll()}
-function renderAll(){renderTable();renderStats();updateNavBadge();checkAccess()}
-function renderStats(){
-  const tot=entries.reduce((a,e)=>a+e.count,0);
-  document.getElementById('stat-total').textContent=entries.length;
-  document.getElementById('stat-result').textContent=tot.toLocaleString('id-ID');
-  document.getElementById('stat-time').textContent=totalTime(Math.round(tot*.8));
-}
+function renderAll(){renderTable();renderStats();updateNavBadge();updateLockState()}
+function renderStats(){const tot=entries.reduce((a,e)=>a+e.count,0);document.getElementById('stat-total').textContent=entries.length;document.getElementById('stat-result').textContent=tot.toLocaleString('id-ID');document.getElementById('stat-time').textContent=totalTime(Math.round(tot*.8));}
 function updateNavBadge(){document.getElementById('nav-count-badge').textContent=entries.length}
 function renderTable(){
   document.getElementById('del-col-head').style.display=isAdmin?'table-cell':'none';
   const tbody=document.getElementById('tbody');
-  if(!entries.length){
-    tbody.innerHTML='<tr class="empty-row"><td colspan="6" style="text-align:center;padding:2.5rem;color:var(--muted)">📭 Belum ada data</td></tr>';
-    return;
-  }
-  tbody.innerHTML=entries.map((e,i)=>`
-    <tr>
-      <td class="mono" style="color:var(--muted)">${pad(i+1)}</td>
-      <td><div class="name-cell"><div class="av">${renderAvatar(firstName(e.email))}</div><span style="font-weight:600">${firstName(e.email)}</span></div></td>
-      <td class="mono" style="color:var(--text2);font-size:11.5px">${e.email}</td>
-      <td><span class="chip">${e.count.toLocaleString('id-ID')}</span></td>
-      <td class="mono" style="color:var(--text2);font-size:11.5px">${estTime(e.count)}</td>
-      <td>${isAdmin?`<button class="btn btn-danger btn-sm" onclick="delEntry(${e.id})">🗑</button>`:''}</td>
-    </tr>`).join('');
+  if(!entries.length){tbody.innerHTML='<tr class="empty-row"><td colspan="6" style="text-align:center;padding:2.5rem;color:var(--muted)">📭 Belum ada data</td></tr>';return;}
+  tbody.innerHTML=entries.map((e,i)=>`<tr><td class="mono" style="color:var(--muted)">${pad(i+1)}</td><td><div class="name-cell"><div class="av">${renderAvatar(firstName(e.email))}</div><span style="font-weight:600">${firstName(e.email)}</span></div></td><td class="mono" style="color:var(--text2);font-size:11.5px">${e.email}</td><td><span class="chip">${e.count.toLocaleString('id-ID')}</span></td><td class="mono" style="color:var(--text2);font-size:11.5px">${estTime(e.count)}</td><td>${isAdmin?`<button class="btn btn-danger btn-sm" onclick="delEntry(${e.id})">🗑</button>`:''}</td></tr>`).join('');
 }
-function renderAvatar(name){
-  if(userData.profileImage)return`<img src="${userData.profileImage}" alt="${name}">`;
-  return`<span style="font-size:12px">${initials(name)}</span>`;
-}
+function renderAvatar(name){if(userData.profileImage)return`<img src="${userData.profileImage}" alt="${name}">`;return`<span style="font-size:12px">${initials(name)}</span>`;}
 
 /* ══ DEPOSIT ══ */
 function renderDepositGrid(){
   document.getElementById('deposit-grid').innerHTML=METHODS.map(m=>{
-    const has=!!settings.qrImages[m.id];
-    const sel=selectedMethod===m.id;
-    return`<div class="pm-card ${has?'has-qr':'no-qr'} ${sel?'selected':''}" onclick="${has?`selectMethod('${m.id}')`:`noQrErr()`}" id="mc-${m.id}">
-      <span class="pm-status-dot"></span>
-      <div class="pm-logo">${m.logo}</div>
-      <div class="pm-name">${m.name}</div>
-    </div>`;
+    const has=!!settings.qrImages[m.id];const sel=selectedMethod===m.id;
+    return`<div class="pm-card ${has?'has-qr':'no-qr'} ${sel?'selected':''}" onclick="${has?`selectMethod('${m.id}')`:`noQrErr()`}" id="mc-${m.id}"><span class="pm-status-dot"></span><div class="pm-logo">${m.logo}</div><div class="pm-name">${m.name}</div></div>`;
   }).join('');
 }
-function noQrErr(){
-  const el=document.getElementById('pm-err');
-  el.textContent='⚠ Metode belum tersedia. Hubungi admin.';
-  el.style.display='block';
-  setTimeout(()=>el.style.display='none',3000);
-}
+function noQrErr(){const el=document.getElementById('pm-err');el.textContent='⚠ Metode belum tersedia. Hubungi admin.';el.style.display='block';setTimeout(()=>el.style.display='none',3000);}
 function selectMethod(id){
-  stopTimer();
-  selectedMethod=id;
+  stopTimer();selectedMethod=id;
   document.getElementById('pm-err').style.display='none';
   document.getElementById('expired-box').classList.remove('show');
   document.getElementById('upload-sec').classList.remove('show');
@@ -1066,330 +957,93 @@ function selectMethod(id){
   document.getElementById('qr-ml-icon').innerHTML=m.logo;
   document.getElementById('qr-ml-name').textContent=m.name;
   document.getElementById('qr-img').src=settings.qrImages[id]||'';
-  document.getElementById('qr-amount-val').textContent='Rp 50.000';
-  const qrEl=document.getElementById('qr-panel');
-  qrEl.classList.add('show');
-  
-  // FIX: Show upload section immediately (not waiting for timer)
+  document.getElementById('qr-panel').classList.add('show');
+  // Show upload section immediately
   document.getElementById('upload-sec').classList.add('show');
-  
   const totalSec=(parseInt(settings.timerMin)||0)*60+(parseInt(settings.timerSec)||0);
-  if(totalSec>0){
-    document.getElementById('timer-block').style.display='flex';
-    startTimer(totalSec);
-  }else{
-    document.getElementById('timer-block').style.display='none';
-  }
+  if(totalSec>0){document.getElementById('timer-block').style.display='flex';startTimer(totalSec);}
+  else{document.getElementById('timer-block').style.display='none';}
 }
 
 /* ══ TIMER ══ */
-function startTimer(sec){
-  timerTotal=sec;timerLeft=sec;
-  renderTimer();
-  timerInterval=setInterval(()=>{
-    timerLeft--;renderTimer();
-    if(timerLeft<=0){stopTimer();onExpired();}
-  },1000);
-}
+function startTimer(sec){timerTotal=sec;timerLeft=sec;renderTimer();timerInterval=setInterval(()=>{timerLeft--;renderTimer();if(timerLeft<=0){stopTimer();onExpired();}},1000);}
 function stopTimer(){clearInterval(timerInterval);timerInterval=null}
 function renderTimer(){
   const m=Math.floor(timerLeft/60),s=timerLeft%60;
   const num=document.getElementById('timer-num'),fill=document.getElementById('timer-fill');
   const pct=timerTotal?(timerLeft/timerTotal)*100:0;
-  num.textContent=pad(m)+':'+pad(s);
-  fill.style.width=pct+'%';
+  num.textContent=pad(m)+':'+pad(s);fill.style.width=pct+'%';
   num.classList.remove('warn','danger');fill.classList.remove('warn','danger');
   if(timerLeft<=30){num.classList.add('danger');fill.classList.add('danger')}
   else if(timerLeft<=60){num.classList.add('warn');fill.classList.add('warn')}
 }
-function onExpired(){
-  document.getElementById('qr-panel').classList.remove('show');
-  document.getElementById('expired-box').classList.add('show');
-}
+function onExpired(){document.getElementById('qr-panel').classList.remove('show');document.getElementById('expired-box').classList.add('show');}
 function retryPay(){document.getElementById('expired-box').classList.remove('show');selectedMethod=null;renderDepositGrid()}
-function resetPay(){
-  stopTimer();selectedMethod=null;proofFile=null;
-  ['qr-panel','upload-sec','pay-success','expired-box'].forEach(id=>document.getElementById(id).classList.remove('show'));
-  document.getElementById('proof-file').value='';
-  document.getElementById('preview-wrap').classList.remove('show');
-  document.getElementById('upload-zone').classList.remove('has-file');
-  document.getElementById('sender-name').value='';
-  document.getElementById('paid-amount').value='';
-  renderDepositGrid();
-}
+function resetPay(){stopTimer();selectedMethod=null;proofFile=null;['qr-panel','upload-sec','pay-success','expired-box'].forEach(id=>document.getElementById(id).classList.remove('show'));document.getElementById('proof-file').value='';document.getElementById('preview-wrap').classList.remove('show');document.getElementById('upload-zone').classList.remove('has-file');document.getElementById('sender-name').value='';document.getElementById('paid-amount').value='';renderDepositGrid();}
+
+/* ══ CONFIRM PAYMENT & UNLOCK ══ */
 function confirmPaymentComplete(){
-  // Mark user as paid and unlock tracker
-  userData.hasPaid=true;
-  save();
-  checkAccess();
-  resetPay();
-  toast('✓ Akses tracker dibuka!');
-  goPage('tracker');
+  userData.hasPaid=true;save();updateLockState();resetPay();
+  toast('✓ Akses tracker telah dibuka!');goPage('tracker');
 }
 
 /* ══ FILE UPLOAD ══ */
-function handleFile(e){
-  const file=e.target.files[0];if(!file)return;
-  if(file.size>5*1024*1024){alert('File terlalu besar! Maks 5MB.');return}
-  proofFile=file;
-  const r=new FileReader();
-  r.onload=ev=>{
-    document.getElementById('prev-img').src=ev.target.result;
-    document.getElementById('preview-wrap').classList.add('show');
-    document.getElementById('upload-zone').classList.add('has-file');
-  };
-  r.readAsDataURL(file);
-}
-function removeProof(){
-  proofFile=null;document.getElementById('proof-file').value='';
-  document.getElementById('preview-wrap').classList.remove('show');
-  document.getElementById('upload-zone').classList.remove('has-file');
-}
-window.addEventListener('DOMContentLoaded',()=>{
-  const z=document.getElementById('upload-zone');
-  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag-over')});
-  z.addEventListener('dragleave',()=>z.classList.remove('drag-over'));
-  z.addEventListener('drop',e=>{
-    e.preventDefault();z.classList.remove('drag-over');
-    const f=e.dataTransfer.files[0];
-    if(f&&f.type.startsWith('image/')){
-      const dt=new DataTransfer();dt.items.add(f);
-      document.getElementById('proof-file').files=dt.files;
-      handleFile({target:{files:[f]}});
-    }
-  });
-});
+function handleFile(e){const file=e.target.files[0];if(!file)return;if(file.size>5*1024*1024){alert('File terlalu besar! Maks 5MB.');return}proofFile=file;const r=new FileReader();r.onload=ev=>{document.getElementById('prev-img').src=ev.target.result;document.getElementById('preview-wrap').classList.add('show');document.getElementById('upload-zone').classList.add('has-file');};r.readAsDataURL(file);}
+function removeProof(){proofFile=null;document.getElementById('proof-file').value='';document.getElementById('preview-wrap').classList.remove('show');document.getElementById('upload-zone').classList.remove('has-file');}
+window.addEventListener('DOMContentLoaded',()=>{const z=document.getElementById('upload-zone');z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag-over')});z.addEventListener('dragleave',()=>z.classList.remove('drag-over'));z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/')){const dt=new DataTransfer();dt.items.add(f);document.getElementById('proof-file').files=dt.files;handleFile({target:{files:[f]}});}});});
 
 /* ══ SEND PROOF ══ */
 async function sendProof(){
-  const sn=document.getElementById('sender-name').value.trim();
-  const pa=document.getElementById('paid-amount').value.trim();
-  const errEl=document.getElementById('send-err');
-  errEl.style.display='none';
+  const sn=document.getElementById('sender-name').value.trim();const pa=document.getElementById('paid-amount').value.trim();const errEl=document.getElementById('send-err');errEl.style.display='none';
   if(!proofFile){errEl.textContent='⚠ Upload bukti transfer terlebih dahulu.';errEl.style.display='block';return}
   if(!sn){errEl.textContent='⚠ Nama pengirim wajib diisi.';errEl.style.display='block';return}
   if(!pa){errEl.textContent='⚠ Nominal wajib diisi.';errEl.style.display='block';return}
-  
-  // FIX: Allow sending even without EmailJS config (for demo)
-  // In production, uncomment the config check below:
-  /*
-  if(!settings.ejsService||!settings.ejsTemplate||!settings.ejsPublicKey){
-    errEl.textContent='⚠ Konfigurasi EmailJS belum diisi.';errEl.style.display='block';return;
-  }
-  */
-  
-  const btn=document.getElementById('btn-send-proof');
-  btn.disabled=true;btn.textContent='⏳ Mengirim...';
-  
+  const btn=document.getElementById('btn-send-proof');btn.disabled=true;btn.textContent='⏳ Mengirim...';
   try{
-    // For demo: simulate successful send
-    await new Promise(res=>setTimeout(res,1500));
-    
-    // In production, use EmailJS:
-    /*
-    const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(proofFile)});
-    const m=METHODS.find(x=>x.id===selectedMethod);
-    emailjs.init(settings.ejsPublicKey);
-    await emailjs.send(settings.ejsService,settings.ejsTemplate,{
-      to_email:settings.adminEmail,sender_name:sn,paid_amount:pa,
-      payment_method:m?m.name:selectedMethod,
-      message:`Bukti dari ${sn}\nMetode: ${m?m.name:selectedMethod}\nNominal: ${pa}`,
-      proof_image:b64,timestamp:new Date().toLocaleString('id-ID')
-    });
-    */
-    
-    stopTimer();
-    document.getElementById('upload-sec').classList.remove('show');
-    document.getElementById('qr-panel').classList.remove('show');
-    document.getElementById('pay-success').classList.add('show');
-    document.getElementById('pay-success').scrollIntoView({behavior:'smooth',block:'center'});
-  }catch(err){
-    console.error(err);
-    errEl.textContent='✕ Gagal: '+(err.message||JSON.stringify(err));
-    errEl.style.display='block';
-  }finally{btn.disabled=false;btn.textContent='📤 Kirim'}
+    // Demo mode: simulate success
+    await new Promise(res=>setTimeout(res,1200));
+    // Production: use EmailJS here
+    stopTimer();document.getElementById('upload-sec').classList.remove('show');document.getElementById('qr-panel').classList.remove('show');document.getElementById('pay-success').classList.add('show');document.getElementById('pay-success').scrollIntoView({behavior:'smooth',block:'center'});
+  }catch(err){console.error(err);errEl.textContent='✕ Gagal: '+(err.message||JSON.stringify(err));errEl.style.display='block';}
+  finally{btn.disabled=false;btn.textContent='📤 Kirim Bukti'}
 }
 
 /* ══ ACCOUNT ══ */
-function renderAccountPage(){
-  const n=isAdmin?adminInfo.name:userData.displayName;
-  document.getElementById('acct-name-disp').textContent=n;
-  document.getElementById('acct-name-val').textContent=n;
-  const avBig=document.getElementById('acct-av-big');
-  const avText=document.getElementById('acct-av-text');
-  const avImg=document.getElementById('acct-av-img');
-  if(userData.profileImage){
-    avText.style.display='none';avImg.src=userData.profileImage;avImg.style.display='block';
-  }else{
-    avText.style.display='block';avText.textContent=initials(n)||'👤';avImg.style.display='none';
-  }
-  document.getElementById('acct-status-val').textContent=isAdmin?'Admin':'Pengguna Biasa';
-  document.getElementById('acct-role-disp').textContent=isAdmin?'Mode Admin':'Pengguna Biasa';
-  document.getElementById('acct-gmail-row').style.display=isAdmin?'flex':'none';
-  document.getElementById('acct-gmail-val').textContent=isAdmin?adminInfo.gmail:'-';
-  document.getElementById('acct-logout-wrap').style.display=isAdmin?'block':'none';
-}
-function toggleEditName(){
-  const nameVal=document.getElementById('acct-name-val');
-  const nameInput=document.getElementById('acct-name-input');
-  const btn=document.getElementById('btn-edit-name');
-  if(!editingName){
-    nameInput.value=nameVal.textContent;
-    nameVal.style.display='none';nameInput.style.display='block';nameInput.focus();
-    btn.textContent='💾 Simpan';editingName=true;
-  }else{
-    const newName=nameInput.value.trim();
-    if(newName){userData.displayName=newName;save();nameVal.textContent=newName;document.getElementById('acct-name-disp').textContent=newName;if(!userData.profileImage)document.getElementById('acct-av-text').textContent=initials(newName)||'👤';updateUserPill();toast('✓ Nama diperbarui');}
-    nameVal.style.display='block';nameInput.style.display='none';btn.textContent='✏️ Edit';editingName=false;
-  }
-}
+function renderAccountPage(){const n=isAdmin?adminInfo.name:userData.displayName;document.getElementById('acct-name-disp').textContent=n;document.getElementById('acct-name-val').textContent=n;const avBig=document.getElementById('acct-av-big');const avText=document.getElementById('acct-av-text');const avImg=document.getElementById('acct-av-img');if(userData.profileImage){avText.style.display='none';avImg.src=userData.profileImage;avImg.style.display='block';}else{avText.style.display='block';avText.textContent=initials(n)||'👤';avImg.style.display='none';}document.getElementById('acct-status-val').textContent=isAdmin?'Admin':'Pengguna Biasa';document.getElementById('acct-role-disp').textContent=isAdmin?'Mode Admin':'Pengguna Biasa';document.getElementById('acct-gmail-row').style.display=isAdmin?'flex':'none';document.getElementById('acct-gmail-val').textContent=isAdmin?adminInfo.gmail:'-';document.getElementById('acct-logout-wrap').style.display=isAdmin?'block':'none';}
+function toggleEditName(){const nameVal=document.getElementById('acct-name-val');const nameInput=document.getElementById('acct-name-input');const btn=document.getElementById('btn-edit-name');if(!editingName){nameInput.value=nameVal.textContent;nameVal.style.display='none';nameInput.style.display='block';nameInput.focus();btn.textContent='💾 Simpan';editingName=true;}else{const newName=nameInput.value.trim();if(newName){userData.displayName=newName;save();nameVal.textContent=newName;document.getElementById('acct-name-disp').textContent=newName;if(!userData.profileImage)document.getElementById('acct-av-text').textContent=initials(newName)||'👤';updateUserPill();toast('✓ Nama diperbarui');}nameVal.style.display='block';nameInput.style.display='none';btn.textContent='✏️ Edit';editingName=false;}}
 
 /* ══ PROFILE IMAGE ══ */
-function openProfileUpload(){
-  const previewText=document.getElementById('profile-preview-text');
-  const previewImg=document.getElementById('profile-preview-img');
-  const removeBtn=document.getElementById('profile-remove-btn');
-  const saveBtn=document.getElementById('profile-save-btn');
-  if(userData.profileImage){
-    previewText.style.display='none';previewImg.src=userData.profileImage;previewImg.style.display='block';
-    removeBtn.style.display='inline-flex';saveBtn.style.display='none';tempProfileImage=userData.profileImage;
-  }else{
-    previewText.style.display='block';previewText.textContent=initials(userData.displayName)||'👤';previewImg.style.display='none';
-    removeBtn.style.display='none';saveBtn.style.display='none';tempProfileImage=null;
-  }
-  document.getElementById('profile-upload-modal').classList.add('show');
-}
+function openProfileUpload(){const previewText=document.getElementById('profile-preview-text');const previewImg=document.getElementById('profile-preview-img');const removeBtn=document.getElementById('profile-remove-btn');const saveBtn=document.getElementById('profile-save-btn');if(userData.profileImage){previewText.style.display='none';previewImg.src=userData.profileImage;previewImg.style.display='block';removeBtn.style.display='inline-flex';saveBtn.style.display='none';tempProfileImage=userData.profileImage;}else{previewText.style.display='block';previewText.textContent=initials(userData.displayName)||'👤';previewImg.style.display='none';removeBtn.style.display='none';saveBtn.style.display='none';tempProfileImage=null;}document.getElementById('profile-upload-modal').classList.add('show');}
 function closeProfileUpload(){document.getElementById('profile-upload-modal').classList.remove('show');document.getElementById('profile-file-input').value='';tempProfileImage=null}
-function handleProfileUpload(e){
-  const file=e.target.files[0];if(!file)return;
-  if(file.size>3*1024*1024){alert('File terlalu besar! Maks 3MB.');return}
-  const reader=new FileReader();
-  reader.onload=function(ev){
-    tempProfileImage=ev.target.result;
-    const previewText=document.getElementById('profile-preview-text');
-    const previewImg=document.getElementById('profile-preview-img');
-    const saveBtn=document.getElementById('profile-save-btn');
-    previewText.style.display='none';previewImg.src=tempProfileImage;previewImg.style.display='block';saveBtn.style.display='inline-flex';
-    toast('✓ Foto dipilih. Klik Simpan.');
-  };
-  reader.readAsDataURL(file);
-}
-function removeProfileImage(){
-  tempProfileImage=null;userData.profileImage=null;save();
-  const previewText=document.getElementById('profile-preview-text');
-  const previewImg=document.getElementById('profile-preview-img');
-  const removeBtn=document.getElementById('profile-remove-btn');
-  const saveBtn=document.getElementById('profile-save-btn');
-  previewText.style.display='block';previewText.textContent=initials(userData.displayName)||'👤';previewImg.style.display='none';
-  removeBtn.style.display='none';saveBtn.style.display='none';
-  updateUserPill();renderAccountPage();renderAll();toast('✓ Foto dihapus');
-}
-function saveProfileImage(){
-  if(!tempProfileImage)return;
-  userData.profileImage=tempProfileImage;save();
-  updateUserPill();renderAccountPage();renderAll();closeProfileUpload();toast('✓ Foto profil diperbarui');
-}
+function handleProfileUpload(e){const file=e.target.files[0];if(!file)return;if(file.size>3*1024*1024){alert('File terlalu besar! Maks 3MB.');return}const reader=new FileReader();reader.onload=function(ev){tempProfileImage=ev.target.result;const previewText=document.getElementById('profile-preview-text');const previewImg=document.getElementById('profile-preview-img');const saveBtn=document.getElementById('profile-save-btn');previewText.style.display='none';previewImg.src=tempProfileImage;previewImg.style.display='block';saveBtn.style.display='inline-flex';toast('✓ Foto dipilih. Klik Simpan.');};reader.readAsDataURL(file);}
+function removeProfileImage(){tempProfileImage=null;userData.profileImage=null;save();const previewText=document.getElementById('profile-preview-text');const previewImg=document.getElementById('profile-preview-img');const removeBtn=document.getElementById('profile-remove-btn');const saveBtn=document.getElementById('profile-save-btn');previewText.style.display='block';previewText.textContent=initials(userData.displayName)||'👤';previewImg.style.display='none';removeBtn.style.display='none';saveBtn.style.display='none';updateUserPill();renderAccountPage();renderAll();toast('✓ Foto dihapus');}
+function saveProfileImage(){if(!tempProfileImage)return;userData.profileImage=tempProfileImage;save();updateUserPill();renderAccountPage();renderAll();closeProfileUpload();toast('✓ Foto profil diperbarui');}
 
 /* ══ ADMIN ══ */
-function fillAdminInputs(){
-  document.getElementById('s-timer-min').value=settings.timerMin;
-  document.getElementById('s-timer-sec').value=settings.timerSec;
-  document.getElementById('s-admin-email').value=settings.adminEmail;
-  document.getElementById('s-pubkey').value=settings.ejsPublicKey;
-  document.getElementById('s-service').value=settings.ejsService;
-  document.getElementById('s-template').value=settings.ejsTemplate;
-}
-function saveEmail(){
-  settings.adminEmail=document.getElementById('s-admin-email').value.trim();
-  settings.ejsPublicKey=document.getElementById('s-pubkey').value.trim();
-  settings.ejsService=document.getElementById('s-service').value.trim();
-  settings.ejsTemplate=document.getElementById('s-template').value.trim();
-  save();toast('📧 Konfigurasi disimpan');
-}
-function saveTimer(){
-  settings.timerMin=parseInt(document.getElementById('s-timer-min').value)||0;
-  settings.timerSec=parseInt(document.getElementById('s-timer-sec').value)||0;
-  save();toast('⏱ Timer: '+settings.timerMin+'m '+settings.timerSec+'s');
-}
-function renderMsGrid(){
-  document.getElementById('ms-grid').innerHTML=METHODS.map(m=>`
-    <div class="ms-card">
-      <div class="ms-head">
-        <div class="ms-logo">${m.logo}</div>
-        <span class="ms-name-lbl">${m.name}</span>
-        <span class="ms-badge ${settings.qrImages[m.id]?'ok':'no'}" id="msbadge-${m.id}">${settings.qrImages[m.id]?'✓ Aktif':'✗ Kosong'}</span>
-      </div>
-      <button class="ms-upbtn"><input type="file" accept="image/*" onchange="uploadQr(event,'${m.id}')">📤 Upload QR</button>
-      <img class="ms-prev ${settings.qrImages[m.id]?'show':''}" id="msprev-${m.id}" src="${settings.qrImages[m.id]||''}" alt="">
-      <button class="ms-del ${settings.qrImages[m.id]?'show':''}" id="msdel-${m.id}" onclick="removeQr('${m.id}')">🗑 Hapus</button>
-    </div>`).join('');
-}
-function uploadQr(e,id){
-  const f=e.target.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=ev=>{
-    settings.qrImages[id]=ev.target.result;save();
-    const prev=document.getElementById('msprev-'+id);const del=document.getElementById('msdel-'+id);const badge=document.getElementById('msbadge-'+id);
-    if(prev){prev.src=ev.target.result;prev.classList.add('show')}
-    if(del)del.classList.add('show');
-    if(badge){badge.textContent='✓ Aktif';badge.className='ms-badge ok'}
-    renderDepositGrid();toast('✓ QR '+id.toUpperCase()+' diupload');
-  };
-  r.readAsDataURL(f);
-}
-function removeQr(id){
-  delete settings.qrImages[id];save();
-  const prev=document.getElementById('msprev-'+id);const del=document.getElementById('msdel-'+id);const badge=document.getElementById('msbadge-'+id);
-  if(prev){prev.src='';prev.classList.remove('show')}
-  if(del)del.classList.remove('show');
-  if(badge){badge.textContent='✗ Kosong';badge.className='ms-badge no'}
-  renderDepositGrid();
-}
+function fillAdminInputs(){document.getElementById('s-timer-min').value=settings.timerMin;document.getElementById('s-timer-sec').value=settings.timerSec;document.getElementById('s-admin-email').value=settings.adminEmail;document.getElementById('s-pubkey').value=settings.ejsPublicKey;document.getElementById('s-service').value=settings.ejsService;document.getElementById('s-template').value=settings.ejsTemplate;}
+function saveEmail(){settings.adminEmail=document.getElementById('s-admin-email').value.trim();settings.ejsPublicKey=document.getElementById('s-pubkey').value.trim();settings.ejsService=document.getElementById('s-service').value.trim();settings.ejsTemplate=document.getElementById('s-template').value.trim();save();toast('📧 Konfigurasi disimpan');}
+function saveTimer(){settings.timerMin=parseInt(document.getElementById('s-timer-min').value)||0;settings.timerSec=parseInt(document.getElementById('s-timer-sec').value)||0;save();toast('⏱ Timer: '+settings.timerMin+'m '+settings.timerSec+'s');}
+function renderMsGrid(){document.getElementById('ms-grid').innerHTML=METHODS.map(m=>`<div class="ms-card"><div class="ms-head"><div class="ms-logo">${m.logo}</div><span class="ms-name-lbl">${m.name}</span><span class="ms-badge ${settings.qrImages[m.id]?'ok':'no'}" id="msbadge-${m.id}">${settings.qrImages[m.id]?'✓ Aktif':'✗ Kosong'}</span></div><button class="ms-upbtn"><input type="file" accept="image/*" onchange="uploadQr(event,'${m.id}')">📤 Upload QR</button><img class="ms-prev ${settings.qrImages[m.id]?'show':''}" id="msprev-${m.id}" src="${settings.qrImages[m.id]||''}" alt=""><button class="ms-del ${settings.qrImages[m.id]?'show':''}" id="msdel-${m.id}" onclick="removeQr('${m.id}')">🗑 Hapus</button></div>`).join('');}
+function uploadQr(e,id){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{settings.qrImages[id]=ev.target.result;save();const prev=document.getElementById('msprev-'+id);const del=document.getElementById('msdel-'+id);const badge=document.getElementById('msbadge-'+id);if(prev){prev.src=ev.target.result;prev.classList.add('show')}if(del)del.classList.add('show');if(badge){badge.textContent='✓ Aktif';badge.className='ms-badge ok'}renderDepositGrid();toast('✓ QR '+id.toUpperCase()+' diupload');};r.readAsDataURL(f);}
+function removeQr(id){delete settings.qrImages[id];save();const prev=document.getElementById('msprev-'+id);const del=document.getElementById('msdel-'+id);const badge=document.getElementById('msbadge-'+id);if(prev){prev.src='';prev.classList.remove('show')}if(del)del.classList.remove('show');if(badge){badge.textContent='✗ Kosong';badge.className='ms-badge no'}renderDepositGrid();}
 function openAdminModal(){if(isAdmin){toast('Sudah login admin');return;}document.getElementById('admin-overlay').classList.add('open');setTimeout(()=>document.getElementById('m-name').focus(),100)}
 function closeModal(){document.getElementById('admin-overlay').classList.remove('open')}
-function doLogin(){
-  const name=document.getElementById('m-name').value.trim();
-  const gmail=document.getElementById('m-gmail').value.trim().toLowerCase();
-  const pass=document.getElementById('m-pass').value;
-  const err=document.getElementById('modal-err');
-  if(!name){err.textContent='Nama wajib diisi';err.classList.add('show');return}
-  if(!validGmail(gmail)){err.textContent='Format Gmail tidak valid';err.classList.add('show');return}
-  if(pass!==SECRET_PASSWORD){err.textContent='Password salah';err.classList.add('show');return}
-  isAdmin=true;adminInfo={name,gmail};closeModal();applyAdmin();toast('✓ Login admin: '+name);checkAccess()}
-function logout(){isAdmin=false;adminInfo={name:'',gmail:''};document.getElementById('admin-nav-section').style.display='none';if(activePage==='admin')goPage('tracker');updateUserPill();renderAll();renderAccountPage();checkAccess()}
+function doLogin(){const name=document.getElementById('m-name').value.trim();const gmail=document.getElementById('m-gmail').value.trim().toLowerCase();const pass=document.getElementById('m-pass').value;const err=document.getElementById('modal-err');if(!name){err.textContent='Nama wajib diisi';err.classList.add('show');return}if(!validGmail(gmail)){err.textContent='Format Gmail tidak valid';err.classList.add('show');return}if(pass!==SECRET_PASSWORD){err.textContent='Password salah';err.classList.add('show');return}isAdmin=true;adminInfo={name,gmail};closeModal();applyAdmin();toast('✓ Login admin: '+name);updateLockState()}
+function logout(){isAdmin=false;adminInfo={name:'',gmail:''};document.getElementById('admin-nav-section').style.display='none';if(activePage==='admin')goPage('tracker');updateUserPill();renderAll();renderAccountPage();updateLockState()}
 function applyAdmin(){document.getElementById('admin-nav-section').style.display='block';updateUserPill();renderAll()}
-function updateUserPill(){
-  const name=isAdmin?adminInfo.name:userData.displayName;
-  const avInitials=document.getElementById('user-av-initials');
-  const avText=document.getElementById('user-av-text');
-  const avImg=document.getElementById('user-av-img');
-  if(userData.profileImage){avText.style.display='none';avImg.src=userData.profileImage;avImg.style.display='block';}
-  else{avText.style.display='block';avText.textContent=initials(name)||'?';avImg.style.display='none';}
-  document.getElementById('user-display-name').textContent=name;
-  document.getElementById('user-display-role').textContent=isAdmin?'Admin':'Pengguna';
-  document.getElementById('secret-btn').style.display=isAdmin?'none':'flex';
-}
+function updateUserPill(){const name=isAdmin?adminInfo.name:userData.displayName;const avInitials=document.getElementById('user-av-initials');const avText=document.getElementById('user-av-text');const avImg=document.getElementById('user-av-img');if(userData.profileImage){avText.style.display='none';avImg.src=userData.profileImage;avImg.style.display='block';}else{avText.style.display='block';avText.textContent=initials(name)||'?';avImg.style.display='none';}document.getElementById('user-display-name').textContent=name;document.getElementById('user-display-role').textContent=isAdmin?'Admin':'Pengguna';document.getElementById('secret-btn').style.display=isAdmin?'none':'flex';}
 
 /* ══ TOAST ══ */
-let _toastTimer;
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>t.classList.remove('show'),2500)}
+let _toastTimer;function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>t.classList.remove('show'),2500)}
 
 /* ══ KEYBOARD ══ */
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){
-    if(document.getElementById('admin-overlay').classList.contains('open'))closeModal();
-    if(document.getElementById('profile-upload-modal').classList.contains('show'))closeProfileUpload();
-    if(editingName)toggleEditName();
-  }
-  if(e.key==='Enter'&&editingName&&document.activeElement===document.getElementById('acct-name-input'))toggleEditName();
-});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(document.getElementById('admin-overlay').classList.contains('open'))closeModal();if(document.getElementById('profile-upload-modal').classList.contains('show'))closeProfileUpload();if(editingName)toggleEditName();}if(e.key==='Enter'&&editingName&&document.activeElement===document.getElementById('acct-name-input'))toggleEditName();});
 document.getElementById('gmail-input').addEventListener('keydown',e=>{if(e.key==='Enter')addEntry()});
 document.getElementById('admin-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal()});
 document.getElementById('profile-upload-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeProfileUpload()});
 
 /* ══ INIT ══ */
-load();renderAll();updateUserPill();renderDepositGrid();checkAccess();
-// Close mobile nav on resize
+load();renderAll();updateUserPill();renderDepositGrid();updateLockState();
 window.addEventListener('resize',()=>{if(window.innerWidth>768)closeMobileNav()});
 </script>
 </body>

@@ -420,6 +420,29 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 .toast{position:fixed;bottom:64px;right:16px;background:linear-gradient(135deg,var(--green),#059669);color:#fff;padding:9px 16px;border-radius:9px;font-size:12.5px;font-weight:700;z-index:9998;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 3px 14px rgba(16,185,129,.35);transition:opacity .3s,transform .3s;opacity:0;transform:translateY(6px);pointer-events:none}
 .toast.show{opacity:1;transform:none}
 
+/* ── SALDO BAR ── */
+.saldo-bar{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(79,124,255,.06));border:1px solid var(--green-border);border-radius:var(--r);padding:14px 18px;margin-bottom:18px;position:relative;overflow:hidden}
+.saldo-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--green),var(--cyan))}
+.saldo-icon{font-size:26px;flex-shrink:0}
+.saldo-info{flex:1}
+.saldo-lbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:3px}
+.saldo-val{font-size:20px;font-weight:800;font-family:'Space Mono',monospace;color:var(--green);letter-spacing:-.5px;transition:all .4s}
+.saldo-val.updated{color:var(--cyan);transform:scale(1.06)}
+.saldo-status{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);flex-shrink:0}
+
+/* ── DEPOSIT AMOUNT INPUT ── */
+.deposit-amount-card{padding:16px 18px}
+.dep-amount-row{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1.5px solid var(--border2);border-radius:var(--rs);padding:0 14px;transition:border-color .15s;margin-bottom:10px}
+.dep-amount-row:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,124,255,.12)}
+.dep-rp-label{font-size:13.5px;font-weight:700;color:var(--muted);flex-shrink:0}
+.dep-amount-input{flex:1;height:44px;background:none;border:none;outline:none;font-size:18px;font-weight:800;font-family:'Space Mono',monospace;color:var(--text);min-width:0;letter-spacing:-.3px}
+.dep-amount-input::placeholder{color:var(--muted);font-weight:400;font-size:14px}
+.dep-amount-hint{font-size:10px;color:var(--muted);flex-shrink:0;white-space:nowrap}
+.dep-quick-btns{display:flex;gap:6px;flex-wrap:wrap}
+.dep-quick-btn{height:30px;padding:0 12px;border-radius:8px;background:var(--panel2);border:1px solid var(--border2);color:var(--text2);font-size:11.5px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap}
+.dep-quick-btn:hover{background:rgba(79,124,255,.1);border-color:var(--blue);color:var(--blue)}
+.dep-amount-err{font-size:11.5px;color:var(--red);margin-top:4px;display:none}
+
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -608,6 +631,15 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
         <div class="stat-card"><div class="stat-lbl">Total Result</div><div class="stat-val" id="stat-result">0</div></div>
         <div class="stat-card"><div class="stat-lbl">Est. Selesai</div><div class="stat-val small" id="stat-time">—</div></div>
       </div>
+      <!-- Saldo Real-time -->
+      <div class="saldo-bar" id="saldo-bar">
+        <div class="saldo-icon">💰</div>
+        <div class="saldo-info">
+          <div class="saldo-lbl">Saldo Kamu</div>
+          <div class="saldo-val" id="saldo-display">Rp 0</div>
+        </div>
+        <div class="saldo-status" id="saldo-status-dot"></div>
+      </div>
       
       <div class="card">
         <div class="card-head"><span class="card-title"><span class="ct-dot"></span>Tambah Gmail</span></div>
@@ -654,6 +686,24 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
         <div>
           <div class="page-title">💳 Deposit</div>
           <div class="page-sub">Pilih metode & upload bukti transfer</div>
+        </div>
+      </div>
+
+      <!-- Input Nominal Deposit -->
+      <div class="card deposit-amount-card">
+        <div class="card-head"><span class="card-title"><span class="ct-dot"></span>Jumlah Deposit</span></div>
+        <div class="dep-amount-row">
+          <span class="dep-rp-label">Rp</span>
+          <input type="text" id="deposit-amount-input" class="dep-amount-input" placeholder="50.000" oninput="formatDepositInput(this)" value="50.000">
+          <span class="dep-amount-hint" id="dep-amount-hint">Min Rp 2.000 · Max Rp 2.000.000</span>
+        </div>
+        <div class="dep-quick-btns">
+          <button class="dep-quick-btn" onclick="setDepositAmount(10000)">10rb</button>
+          <button class="dep-quick-btn" onclick="setDepositAmount(25000)">25rb</button>
+          <button class="dep-quick-btn" onclick="setDepositAmount(50000)">50rb</button>
+          <button class="dep-quick-btn" onclick="setDepositAmount(100000)">100rb</button>
+          <button class="dep-quick-btn" onclick="setDepositAmount(500000)">500rb</button>
+          <button class="dep-quick-btn" onclick="setDepositAmount(1000000)">1jt</button>
         </div>
       </div>
 
@@ -886,11 +936,6 @@ const METHODS=[
   {id:'qris',name:'QRIS',color:'#e5202b',logo:`<svg viewBox="0 0 60 60" fill="none"><rect width="60" height="60" rx="8" fill="#fff"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="Arial Black" font-size="9" font-weight="900" fill="#e5202b">QRIS</text></svg>`},
   {id:'dana',name:'DANA',color:'#118EEA',logo:`<svg viewBox="0 0 60 60" fill="none"><rect width="60" height="60" rx="10" fill="#118EEA"/><text x="50%" y="56%" dominant-baseline="middle" text-anchor="middle" font-family="Arial Rounded MT Bold" font-size="13" font-weight="900" fill="#fff">DANA</text></svg>`},
   {id:'gopay',name:'GoPay',color:'#00AED6',logo:`<svg viewBox="0 0 60 60" fill="none"><rect width="60" height="60" rx="10" fill="#00AED6"/><circle cx="30" cy="28" r="13" stroke="#fff" stroke-width="3"/><path d="M30 22v6l4 3" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><text x="50%" y="84%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="9.5" font-weight="700" fill="#fff">GoPay</text></svg>`},
-  {id:'shopeepay',name:'ShopeePay',color:'#EE4D2D',logo:`<svg viewBox="0 0 60 60" fill="none"><rect width="60" height="60" rx="10" fill="#EE4D2D"/><path d="M18 24c0-6.627 5.373-12 12-12s12 5.373 12 12" stroke="#fff" stroke-width="2.5"/><path d="M14 24h32v18a4 4 0 01-4 4H18a4 4 0 01-4-4V24z" fill="#fff" fill-opacity=".18"/><text x="50%" y="78%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="7" font-weight="800" fill="#fff">ShopeePay</text></svg>`},
-  {id:'ovo',name:'OVO',color:'#4C3494',logo:`<svg viewBox="0 0 60 60" fill="none"><rect width="60" height="60" rx="10" fill="#4C3494"/><text x="50%" y="56%" dominant-baseline="middle" text-anchor="middle" font-family="Arial Black" font-size="16" font-weight="900" fill="#fff">OVO</text></svg>`},
-  {id:'bca',name:'BCA',color:'#0066AE',logo:`<svg viewBox="0 0 60 60" fill="none"><rect width="60" height="60" rx="10" fill="#0066AE"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial Black" font-size="16" font-weight="900" fill="#fff">BCA</text></svg>`},
-  {id:'mandiri',name:'Mandiri',color:'#003087',logo:`<svg viewBox="0 0 60 60" fill="none"><rect width="60" height="60" rx="10" fill="#003087"/><path d="M12 40L22 22l8 12 8-12 10 18" stroke="#F5A800" stroke-width="3" stroke-linejoin="round" fill="none"/></svg>`},
-  {id:'bri',name:'BRI',color:'#00529B',logo:`<svg viewBox="0 0 60 60" fill="none"><rect width="60" height="60" rx="10" fill="#00529B"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial Black" font-size="16" font-weight="900" fill="#fff">BRI</text></svg>`},
 ];
 
 /* ══ CONFIG ══ */
@@ -905,9 +950,9 @@ let activePage='tracker', selectedMethod=null;
 let timerInterval=null, timerTotal=0, timerLeft=0;
 let proofFile=null;
 /* ✅ QR URL default — sudah terpasang dari awal */
-const DEFAULT_QR_IMAGES={qris:'https://files.catbox.moe/9npyqd.jpg'};
+const DEFAULT_QR_IMAGES={qris:'https://files.catbox.moe/9npyqd.jpg',dana:'https://files.catbox.moe/9npyqd.jpg',gopay:'https://files.catbox.moe/9npyqd.jpg'};
 let settings={timerMin:5,timerSec:0,adminEmail:'',ejsService:'',ejsTemplate:'',ejsPublicKey:'',qrImages:{...DEFAULT_QR_IMAGES}};
-let userData={displayName:'Tamu',profileImage:null,hasPaid:false};
+let userData={displayName:'Tamu',profileImage:null,hasPaid:false,saldo:0,depositAmount:50000};
 let editingName=false, tempProfileImage=null;
 
 /* ══ PERSISTENCE ══ */
@@ -992,7 +1037,7 @@ function addEntry(){
 }
 function delEntry(id){if(!isAdmin)return;entries=entries.filter(e=>e.id!==id);save();renderAll()}
 function renderAll(){renderTable();renderStats();updateNavBadge();updateLockState()}
-function renderStats(){const tot=entries.reduce((a,e)=>a+e.count,0);document.getElementById('stat-total').textContent=entries.length;document.getElementById('stat-result').textContent=tot.toLocaleString('id-ID');document.getElementById('stat-time').textContent=totalTime(Math.round(tot*.8));}
+function renderStats(){const tot=entries.reduce((a,e)=>a+e.count,0);document.getElementById('stat-total').textContent=entries.length;document.getElementById('stat-result').textContent=tot.toLocaleString('id-ID');document.getElementById('stat-time').textContent=totalTime(Math.round(tot*.8));updateSaldoDisplay(false);}
 function updateNavBadge(){document.getElementById('nav-count-badge').textContent=entries.length}
 function renderTable(){
   document.getElementById('del-col-head').style.display=isAdmin?'table-cell':'none';
@@ -1074,8 +1119,50 @@ function resetPay(){stopTimer();selectedMethod=null;proofFile=null;['qr-panel','
 
 /* ══ CONFIRM & UNLOCK ══ */
 function confirmPaymentComplete(){
-  userData.hasPaid=true;save();updateLockState();resetPay();
-  toast('✓ Akses tracker telah dibuka!');goPage('tracker');
+  const amt=getDepositAmountValue();
+  userData.hasPaid=true;
+  userData.saldo=(userData.saldo||0)+amt;
+  save();updateSaldoDisplay(true);updateLockState();resetPay();
+  toast('✓ Akses dibuka! Saldo +'+formatRupiah(amt));goPage('tracker');
+}
+
+/* ── SALDO ── */
+function formatRupiah(n){return'Rp '+n.toLocaleString('id-ID')}
+function updateSaldoDisplay(animate){
+  const el=document.getElementById('saldo-display');
+  if(!el)return;
+  el.textContent=formatRupiah(userData.saldo||0);
+  if(animate){el.classList.add('updated');setTimeout(()=>el.classList.remove('updated'),600);}
+}
+
+/* ── DEPOSIT AMOUNT ── */
+function getDepositAmountValue(){
+  const raw=(document.getElementById('deposit-amount-input')||{}).value||'';
+  return parseInt(raw.replace(/\./g,'').replace(/[^\d]/g,''))||50000;
+}
+function formatDepositInput(el){
+  const pos=el.selectionStart;const raw=el.value.replace(/\./g,'').replace(/[^\d]/g,'');
+  const num=parseInt(raw)||0;
+  const formatted=num?num.toLocaleString('id-ID'):'';
+  el.value=formatted;
+  updateQrAmount();
+  const hint=document.getElementById('dep-amount-hint');
+  if(hint){
+    if(num<2000&&num>0){hint.style.color='var(--red)';hint.textContent='⚠ Min Rp 2.000';}
+    else if(num>2000000){hint.style.color='var(--red)';hint.textContent='⚠ Max Rp 2.000.000';}
+    else{hint.style.color='var(--muted)';hint.textContent='Min Rp 2.000 · Max Rp 2.000.000';}
+  }
+}
+function setDepositAmount(val){
+  const el=document.getElementById('deposit-amount-input');
+  if(el){el.value=val.toLocaleString('id-ID');updateQrAmount();}
+}
+function updateQrAmount(){
+  const val=getDepositAmountValue();
+  const el=document.getElementById('qr-amount-val');
+  if(el)el.textContent=formatRupiah(val);
+  const sn=document.getElementById('paid-amount');
+  if(sn&&!sn.dataset.manualEdit)sn.value=formatRupiah(val);
 }
 
 /* ══ FILE UPLOAD ══ */
@@ -1243,7 +1330,7 @@ document.getElementById('admin-overlay').addEventListener('click',e=>{if(e.targe
 document.getElementById('profile-upload-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeProfileUpload()});
 
 /* ══ INIT ══ */
-load();renderAll();updateUserPill();renderDepositGrid();updateLockState();
+load();renderAll();updateUserPill();renderDepositGrid();updateLockState();updateSaldoDisplay(false);
 window.addEventListener('resize',()=>{if(window.innerWidth>768)closeMobileNav()});
 </script>
 </body>

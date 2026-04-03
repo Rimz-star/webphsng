@@ -1128,6 +1128,45 @@ document.getElementById('admin-overlay').addEventListener('click',e=>{if(e.targe
 
 /* ══ INIT ══ */
 load();renderAll();updateUserPill();renderDepositGrid();
+<script>
+  if(file.size > 2 * 1024 * 1024){
+    alert('Maksimal 2MB');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const base64 = ev.target.result;
+
+    if(isAdmin){
+      adminInfo.photo = base64;
+    } else {
+      userAccount.photo = base64;
+    }
+
+    save();
+    renderAccountPage();
+    updateUserPill();
+    toast('Foto berhasil diubah');
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ===== PATCH ACCOUNT PAGE ===== */
+const oldRenderAccountPage = renderAccountPage;
+renderAccountPage = function(){
+  oldRenderAccountPage();
+
+  const n = isAdmin ? adminInfo.name : (isUserLoggedIn ? userAccount.name : 'Tamu');
+  const photo = isAdmin ? adminInfo.photo : userAccount.photo;
+
+  if(photo){
+    document.getElementById('acct-av-big').innerHTML =
+      `<img src="${photo}" style="width:100%;height:100%;border-radius:20px;object-fit:cover;">`;
+  } else {
+    document.getElementById('acct-av-big').textContent = initials(n);
+  }
+}
 </script>
 </body>
 </html>

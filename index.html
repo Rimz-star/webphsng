@@ -682,7 +682,7 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
             <div class="qr-corner bl"></div><div class="qr-corner br"></div>
             <div class="qr-img-box">
               <div class="scan-beam"></div>
-              <img id="qr-img,jpg" src="qr-image" alt="QR">
+              <img id="qr-img" src="" alt="QR">
             </div>
           </div>
           <div class="qr-amount">Total: <span id="qr-amount-val">Rp 50.000</span></div>
@@ -904,13 +904,15 @@ let entries=[], isAdmin=false, adminInfo={name:'',gmail:''};
 let activePage='tracker', selectedMethod=null;
 let timerInterval=null, timerTotal=0, timerLeft=0;
 let proofFile=null;
-let settings={timerMin:5,timerSec:0,adminEmail:'',ejsService:'',ejsTemplate:'',ejsPublicKey:'',qrImages:{}};
+/* ✅ QR URL default — sudah terpasang dari awal */
+const DEFAULT_QR_IMAGES={qris:'https://files.catbox.moe/9npyqd.jpg'};
+let settings={timerMin:5,timerSec:0,adminEmail:'',ejsService:'',ejsTemplate:'',ejsPublicKey:'',qrImages:{...DEFAULT_QR_IMAGES}};
 let userData={displayName:'Tamu',profileImage:null,hasPaid:false};
 let editingName=false, tempProfileImage=null;
 
 /* ══ PERSISTENCE ══ */
 function save(){try{localStorage.setItem(SK_ENTRIES,JSON.stringify(entries));localStorage.setItem(SK_SETTINGS,JSON.stringify(settings));localStorage.setItem(SK_USER,JSON.stringify(userData));}catch(e){}}
-function load(){try{const e=localStorage.getItem(SK_ENTRIES);if(e)entries=JSON.parse(e);const s=localStorage.getItem(SK_SETTINGS);if(s)settings={...settings,...JSON.parse(s)};const u=localStorage.getItem(SK_USER);if(u)userData={...userData,...JSON.parse(u)};}catch(e){}}
+function load(){try{const e=localStorage.getItem(SK_ENTRIES);if(e)entries=JSON.parse(e);const s=localStorage.getItem(SK_SETTINGS);if(s){const sv=JSON.parse(s);settings={...settings,...sv,qrImages:{...DEFAULT_QR_IMAGES,...(sv.qrImages||{})}};}const u=localStorage.getItem(SK_USER);if(u)userData={...userData,...JSON.parse(u)};}catch(e){}}
 
 /* ══ HELPERS ══ */
 function firstName(email){const l=email.split('@')[0];const c=l.replace(/[._\-]+/g,' ').replace(/\d/g,'').trim();const f=c.split(' ')[0]||l;return f.charAt(0).toUpperCase()+f.slice(1).toLowerCase()}
@@ -1161,7 +1163,42 @@ function saveProfileImage(){if(!tempProfileImage)return;userData.profileImage=te
 function fillAdminInputs(){document.getElementById('s-timer-min').value=settings.timerMin;document.getElementById('s-timer-sec').value=settings.timerSec;document.getElementById('s-admin-email').value=settings.adminEmail;document.getElementById('s-pubkey').value=settings.ejsPublicKey;document.getElementById('s-service').value=settings.ejsService;document.getElementById('s-template').value=settings.ejsTemplate;}
 function saveEmail(){settings.adminEmail=document.getElementById('s-admin-email').value.trim();settings.ejsPublicKey=document.getElementById('s-pubkey').value.trim();settings.ejsService=document.getElementById('s-service').value.trim();settings.ejsTemplate=document.getElementById('s-template').value.trim();save();toast('📧 Konfigurasi disimpan');}
 function saveTimer(){settings.timerMin=parseInt(document.getElementById('s-timer-min').value)||0;settings.timerSec=parseInt(document.getElementById('s-timer-sec').value)||0;save();toast('⏱ Timer: '+settings.timerMin+'m '+settings.timerSec+'s');}
-function renderMsGrid(){document.getElementById('ms-grid').innerHTML=METHODS.map(m=>`<div class="ms-card"><div class="ms-head"><div class="ms-logo">${m.logo}</div><span class="ms-name-lbl">${m.name}</span><span class="ms-badge ${settings.qrImages[m.id]?'ok':'no'}" id="msbadge-${m.id}">${settings.qrImages[m.id]?'✓ Aktif':'✗ Kosong'}</span></div><button class="ms-upbtn"><input type="file" accept="image/*" onchange="uploadQr(event,'${m.id}')">📤 Upload QR</button><img class="ms-prev ${settings.qrImages[m.id]?'show':''}" id="msprev-${m.id}" src="${settings.qrImages[m.id]||''}" alt=""><button class="ms-del ${settings.qrImages[m.id]?'show':''}" id="msdel-${m.id}" onclick="removeQr('${m.id}')">🗑 Hapus</button></div>`).join('');}
+function renderMsGrid(){
+  document.getElementById('ms-grid').innerHTML=METHODS.map(m=>{
+    const has=!!settings.qrImages[m.id];
+    const src=settings.qrImages[m.id]||'';
+    return`<div class="ms-card">
+      <div class="ms-head">
+        <div class="ms-logo">${m.logo}</div>
+        <span class="ms-name-lbl">${m.name}</span>
+        <span class="ms-badge ${has?'ok':'no'}" id="msbadge-${m.id}">${has?'✓ Aktif':'✗ Kosong'}</span>
+      </div>
+      <button class="ms-upbtn"><input type="file" accept="image/*" onchange="uploadQr(event,'${m.id}')">📤 Upload File</button>
+      <div style="display:flex;gap:6px;margin-top:6px">
+        <input type="text" id="qrurl-${m.id}" placeholder="Atau paste URL gambar..." value="${has&&src.startsWith('http')?src:''}"
+          style="flex:1;height:32px;padding:0 8px;background:var(--panel);border:1px solid var(--border2);border-radius:7px;font-size:11px;color:var(--text);outline:none;font-family:'Plus Jakarta Sans',sans-serif">
+        <button onclick="setQrFromUrl('${m.id}')" style="height:32px;padding:0 10px;background:var(--blue2);border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer">Set</button>
+      </div>
+      <img class="ms-prev ${has?'show':''}" id="msprev-${m.id}" src="${src}" alt="" onerror="this.style.display='none'">
+      <button class="ms-del ${has?'show':''}" id="msdel-${m.id}" onclick="removeQr('${m.id}')">🗑 Hapus</button>
+    </div>`;
+  }).join('');
+}
+function setQrFromUrl(id){
+  const input=document.getElementById('qrurl-'+id);
+  const url=input.value.trim();
+  if(!url){toast('⚠ URL kosong');return}
+  settings.qrImages[id]=url;save();
+  const prev=document.getElementById('msprev-'+id);
+  const del=document.getElementById('msdel-'+id);
+  const badge=document.getElementById('msbadge-'+id);
+  if(prev){prev.src=url;prev.classList.add('show');prev.style.display='';}
+  if(del)del.classList.add('show');
+  if(badge){badge.textContent='✓ Aktif';badge.className='ms-badge ok';}
+  renderDepositGrid();
+  toast('✓ QR '+id.toUpperCase()+' dari URL diset!');
+}
+function uploadQr
 function uploadQr(e,id){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{settings.qrImages[id]=ev.target.result;save();const prev=document.getElementById('msprev-'+id);const del=document.getElementById('msdel-'+id);const badge=document.getElementById('msbadge-'+id);if(prev){prev.src=ev.target.result;prev.classList.add('show')}if(del)del.classList.add('show');if(badge){badge.textContent='✓ Aktif';badge.className='ms-badge ok'}renderDepositGrid();toast('✓ QR '+id.toUpperCase()+' diupload');};r.readAsDataURL(f);}
 function removeQr(id){delete settings.qrImages[id];save();const prev=document.getElementById('msprev-'+id);const del=document.getElementById('msdel-'+id);const badge=document.getElementById('msbadge-'+id);if(prev){prev.src='';prev.classList.remove('show')}if(del)del.classList.remove('show');if(badge){badge.textContent='✗ Kosong';badge.className='ms-badge no'}renderDepositGrid();}
 function openAdminModal(){if(isAdmin){toast('Sudah login admin');return;}document.getElementById('admin-overlay').classList.add('open');setTimeout(()=>document.getElementById('m-name').focus(),100)}

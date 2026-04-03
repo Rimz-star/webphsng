@@ -17,7 +17,8 @@
   --red:#f43f5e;--red-bg:rgba(244,63,94,0.08);--red-border:rgba(244,63,94,0.22);
   --amber:#f59e0b;
   --r:16px;--rs:10px;
-  --nav-w:64px;--nav-w-exp:200px;
+  /* ✅ FIX: Sidebar width variables */
+  --nav-w:64px;--nav-w-exp:220px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);-webkit-tap-highlight-color:transparent}
@@ -29,33 +30,54 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .orb2{width:400px;height:400px;bottom:-100px;right:-80px;background:radial-gradient(circle,rgba(163,139,250,.1),transparent 70%)}
 .orb3{width:300px;height:300px;top:40%;left:30%;background:radial-gradient(circle,rgba(34,211,238,.05),transparent 70%)}
 
-/* ── LAYOUT ── */
+/* ══════════════════════════════════════
+   ✅ FIX 2: SIDEBAR SELALU OVERLAY (tidak geser konten)
+══════════════════════════════════════ */
 .app{display:flex;height:100vh;position:relative;z-index:1}
 
-/* ── SIDEBAR ── */
 .sidebar{
-  width:var(--nav-w);min-width:var(--nav-w);
-  background:rgba(10,13,26,0.95);border-right:1px solid var(--border);
+  /* ✅ FIXED: Always position fixed — tidak pernah mendorong main */
+  position:fixed;left:0;top:0;bottom:0;
+  width:var(--nav-w);
+  background:rgba(10,13,26,0.97);border-right:1px solid var(--border);
   display:flex;flex-direction:column;align-items:center;padding:16px 0 20px;
-  backdrop-filter:blur(20px);position:relative;z-index:100;
-  transition:width .25s ease,transform .25s ease;overflow:hidden;
+  backdrop-filter:blur(24px);
+  z-index:200;
+  overflow:hidden;
+  /* ✅ Expand on hover = overlay, bukan push */
+  transition:width .25s cubic-bezier(.4,0,.2,1), box-shadow .25s;
 }
-.sidebar:hover,.sidebar.expanded{width:var(--nav-w-exp)}
+/* ✅ Hover melebar tapi sebagai OVERLAY */
+.sidebar:hover, .sidebar.expanded{
+  width:var(--nav-w-exp);
+  box-shadow:4px 0 32px rgba(0,0,0,.55);
+}
+
+/* ✅ FIX: Main selalu offset sebesar collapsed sidebar saja */
+.main{
+  flex:1;
+  margin-left:var(--nav-w); /* Fixed offset — tidak berubah saat sidebar expand */
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  transition:none; /* Tidak ada transisi — tidak ada pergeseran */
+}
+
 .sidebar-logo{
   width:38px;height:38px;min-width:38px;border-radius:11px;
   background:linear-gradient(135deg,var(--blue),var(--purple));
   display:flex;align-items:center;justify-content:center;font-size:17px;
-  box-shadow:0 0 24px rgba(79,124,255,.3);margin-bottom:24px;flex-shrink:0;
+  box-shadow:0 0 24px rgba(79,124,255,.3);flex-shrink:0;
 }
 .sidebar-logo-text{
   font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;
-  opacity:0;transition:opacity .15s;margin-left:8px;
+  opacity:0;transition:opacity .18s;margin-left:10px;
   background:linear-gradient(90deg,var(--text),var(--cyan));
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
 }
 .sidebar:hover .sidebar-logo-text,.sidebar.expanded .sidebar-logo-text{opacity:1}
-.logo-row{display:flex;align-items:center;padding:0 12px;width:100%;margin-bottom:24px}
-.logo-row .sidebar-logo{margin-bottom:0}
+.logo-row{display:flex;align-items:center;padding:0 13px;width:100%;margin-bottom:24px}
 
 .nav-section{width:100%;padding:0 10px;margin-bottom:4px}
 .nav-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding-left:4px;margin-bottom:4px;white-space:nowrap;overflow:hidden;opacity:0;height:0;transition:opacity .15s,height .15s}
@@ -72,9 +94,9 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .nav-item.active{background:rgba(79,124,255,.12);color:var(--blue)}
 .nav-item.active::before{content:'';position:absolute;left:0;top:18%;bottom:18%;width:2.5px;background:var(--blue);border-radius:0 2px 2px 0}
 .nav-icon{width:22px;min-width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.nav-text{opacity:0;transition:opacity .15s;font-size:12.5px}
+.nav-text{opacity:0;transition:opacity .18s;font-size:12.5px}
 .sidebar:hover .nav-text,.sidebar.expanded .nav-text{opacity:1}
-.nav-badge{background:var(--blue);color:#fff;font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:99px;margin-left:auto;opacity:0;transition:opacity .15s;flex-shrink:0}
+.nav-badge{background:var(--blue);color:#fff;font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:99px;margin-left:auto;opacity:0;transition:opacity .18s;flex-shrink:0}
 .sidebar:hover .nav-badge,.sidebar.expanded .nav-badge{opacity:1}
 
 .sidebar-bottom{margin-top:auto;width:100%;padding:0 10px}
@@ -92,22 +114,21 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
   overflow:hidden;position:relative;
 }
 .user-av img{width:100%;height:100%;object-fit:cover}
-.user-info{overflow:hidden;opacity:0;transition:opacity .15s;min-width:0}
+.user-info{overflow:hidden;opacity:0;transition:opacity .18s;min-width:0}
 .sidebar:hover .user-info,.sidebar.expanded .user-info{opacity:1}
 .user-name{font-size:11.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .user-role{font-size:9.5px;color:var(--muted)}
 
-/* ── MOBILE NAV ── */
+/* ── MOBILE NAV TOGGLE ── */
 .nav-toggle{
-  display:none;position:fixed;top:14px;left:14px;z-index:101;
+  display:none;position:fixed;top:14px;left:14px;z-index:300;
   width:44px;height:44px;border-radius:12px;
   background:var(--panel);border:1px solid var(--border);
   color:var(--text);font-size:20px;cursor:pointer;
   box-shadow:0 4px 20px rgba(0,0,0,.4);
 }
 
-/* ── MAIN ── */
-.main{flex:1;overflow:hidden;display:flex;flex-direction:column;position:relative}
+/* ── MAIN / PAGES ── */
 .page{
   position:absolute;inset:0;overflow-y:auto;padding:20px 16px 32px;
   opacity:0;transform:translateX(16px) scale(.99);pointer-events:none;
@@ -196,50 +217,42 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 .chip{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;background:rgba(79,124,255,.1);color:var(--cyan);font-family:'Space Mono',monospace;border:1px solid rgba(79,124,255,.18)}
 .empty-row td{text-align:center;padding:2.5rem;color:var(--muted)}
 
-/* ════════════════════════════════
-   🔒 LOCKED FIELD INDICATOR (RED X)
-════════════════════════════════ */
-.locked-field{position:relative}
+/* ── LOCKED FIELD ── */
 .locked-field::after{
-  content:'✕';
-  position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  width:32px;height:32px;border-radius:50%;
-  background:var(--red);color:#fff;
-  display:flex;align-items:center;justify-content:center;
+  content:'✕';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);width:32px;height:32px;border-radius:50%;
+  background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;
   font-size:18px;font-weight:700;z-index:5;
-  box-shadow:0 2px 12px rgba(244,63,94,.4);
-  pointer-events:none;
-}
-.locked-field input:disabled + .lock-hint,
-.locked-field:has(input:disabled)::before{
-  content:'🔒 Fitur terkunci - Deposit dulu';
-  position:absolute;bottom:-22px;left:0;right:0;
-  font-size:10px;color:var(--red);text-align:center;
-  font-weight:600;animation:pulse 2s ease-in-out infinite;
+  box-shadow:0 2px 12px rgba(244,63,94,.4);pointer-events:none;
 }
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
 
-/* ════════════════════════════════
-   DEPOSIT PAGE
-════════════════════════════════ */
+/* ══════════════════════════════════════
+   ✅ FIX 1: DEPOSIT - semua metode bisa diklik
+══════════════════════════════════════ */
 .deposit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:16px}
 
 .pm-card{
   background:var(--panel2);border:1.5px solid var(--border);
   border-radius:12px;padding:14px 10px 12px;
-  cursor:pointer;text-align:center;
-  transition:all .2s ease;position:relative;user-select:none;overflow:hidden;
+  cursor:pointer; /* ✅ Selalu bisa diklik */
+  text-align:center;transition:all .2s ease;position:relative;user-select:none;overflow:hidden;
 }
 .pm-card::before{content:'';position:absolute;inset:0;border-radius:12px;opacity:0;transition:opacity .15s;background:radial-gradient(circle at 50% 100%,rgba(79,124,255,.12),transparent 70%)}
 .pm-card:hover{transform:translateY(-2px);border-color:var(--border2);box-shadow:0 6px 22px rgba(0,0,0,.3)}
 .pm-card:hover::before{opacity:1}
 .pm-card.selected{border-color:var(--blue);background:rgba(79,124,255,.07);box-shadow:0 0 0 1px var(--blue),0 4px 18px rgba(79,124,255,.2)}
-.pm-card.no-qr{opacity:.45;cursor:not-allowed;filter:saturate(.4)}
-.pm-card.no-qr:hover{transform:none;border-color:var(--border);box-shadow:none}
+/* ✅ DIHAPUS: .no-qr tidak lagi memblokir klik */
+.pm-card.no-qr{
+  opacity:.65; /* Sedikit redup tapi TETAP bisa diklik */
+}
+.pm-card.no-qr .pm-name::after{
+  content:' ⚠';font-size:9px;color:var(--amber);
+}
 .pm-status-dot{position:absolute;top:7px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--muted)}
 .pm-card.has-qr .pm-status-dot{background:var(--green);box-shadow:0 0 4px var(--green)}
 .pm-card.selected .pm-status-dot{background:var(--blue);box-shadow:0 0 6px var(--blue)}
+.pm-card.no-qr .pm-status-dot{background:var(--amber)}
 
 .pm-logo{width:46px;height:46px;margin:0 auto 8px;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .pm-logo svg{width:100%;height:100%}
@@ -262,6 +275,17 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 .qr-method-label span{font-size:12.5px;font-weight:700;color:var(--cyan)}
 .qr-headline{font-size:18px;font-weight:800;margin-bottom:4px}
 .qr-sub{font-size:12.5px;color:var(--text2);margin-bottom:16px}
+
+/* ✅ QR Placeholder (saat QR belum ada) */
+.qr-placeholder{
+  width:180px;height:180px;border-radius:12px;overflow:hidden;
+  border:2px dashed var(--amber);background:rgba(245,158,11,.06);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  margin:0 auto 16px;gap:8px;
+}
+.qr-placeholder-icon{font-size:38px}
+.qr-placeholder-text{font-size:11.5px;color:var(--amber);font-weight:600;max-width:130px;line-height:1.5;text-align:center}
+
 .qr-frame{position:relative;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px}
 .qr-corner{position:absolute;width:18px;height:18px;border-color:var(--blue);border-style:solid;z-index:2}
 .qr-corner.tl{top:-4px;left:-4px;border-width:2.5px 0 0 2.5px;border-radius:3px 0 0 0}
@@ -326,18 +350,15 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
   background:linear-gradient(135deg,var(--indigo),var(--purple));
   display:flex;align-items:center;justify-content:center;
   font-size:24px;font-weight:800;color:#fff;
-  box-shadow:0 0 26px rgba(99,102,241,.3);
-  flex-shrink:0;cursor:pointer;transition:transform .2s;
+  box-shadow:0 0 26px rgba(99,102,241,.3);flex-shrink:0;cursor:pointer;transition:transform .2s;
   overflow:hidden;position:relative;
 }
 .acct-av-big img{width:100%;height:100%;object-fit:cover}
 .acct-av-big:hover{transform:scale(1.03)}
 .acct-av-edit{
-  position:absolute;bottom:6px;right:6px;
-  width:26px;height:26px;border-radius:50%;
-  background:var(--blue);color:#fff;border:none;
-  font-size:13px;cursor:pointer;display:flex;
-  align-items:center;justify-content:center;
+  position:absolute;bottom:6px;right:6px;width:26px;height:26px;border-radius:50%;
+  background:var(--blue);color:#fff;border:none;font-size:13px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
   transition:all .15s;box-shadow:0 2px 7px rgba(0,0,0,.3);
 }
 .acct-av-edit:hover{background:var(--blue2);transform:scale(1.08)}
@@ -420,7 +441,7 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 .profile-upload-box{
   background:var(--panel);border:1px solid var(--border2);
   border-radius:18px;padding:20px;width:100%;max-width:340px;
-  text-align:center;animation:panelIn .2s ease both;
+  text-align:center;animation:panelIn .2s ease both;position:relative;
 }
 .profile-upload-title{font-size:15px;font-weight:700;margin-bottom:6px}
 .profile-upload-sub{font-size:11.5px;color:var(--text2);margin-bottom:16px}
@@ -433,7 +454,7 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 .profile-preview img{width:100%;height:100%;object-fit:cover}
 .profile-upload-zone{
   border:2px dashed var(--border2);border-radius:10px;padding:16px;
-  cursor:pointer;transition:all .18s;background:var(--panel2);
+  cursor:pointer;transition:all .18s;background:var(--panel2);display:block;
 }
 .profile-upload-zone:hover{border-color:var(--blue);background:rgba(79,124,255,.08)}
 .profile-upload-zone input{display:none}
@@ -443,16 +464,38 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 .profile-remove-btn{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
 .profile-remove-btn:hover{background:var(--red)}
 
-/* ════════════════════════════════════════════════════
+/* ══════════════════════════════════════
    📱 MOBILE RESPONSIVE
-════════════════════════════════════════════════════ */
+══════════════════════════════════════ */
 @media(max-width:768px){
-  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:102;transform:translateX(-100%);transition:transform .25s ease}
-  .sidebar.mobile-open{transform:translateX(0);box-shadow:4px 0 40px rgba(0,0,0,.5)}
+  /* ✅ Mobile: sidebar tersembunyi di kiri, tidak mempengaruhi layout */
+  .sidebar{
+    transform:translateX(-100%);
+    width:75vw; /* ✅ Hanya 1/4 lebih sedikit dari layar */
+    max-width:260px;
+    box-shadow:none;
+    transition:transform .25s ease, box-shadow .25s;
+  }
+  .sidebar.mobile-open{
+    transform:translateX(0);
+    box-shadow:4px 0 40px rgba(0,0,0,.6);
+  }
+  /* ✅ Di mobile main tidak ada offset sidebar */
+  .main{margin-left:0}
+  
   .nav-toggle{display:flex}
-  .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:101;backdrop-filter:blur(2px)}
+  /* Overlay backdrop mobile */
+  .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;backdrop-filter:blur(2px)}
   .nav-overlay.show{display:block}
-  .main{padding-left:0}
+  
+  /* Mobile: sidebar expanded teks selalu terlihat */
+  .sidebar.mobile-open .nav-text,
+  .sidebar.mobile-open .nav-lbl,
+  .sidebar.mobile-open .nav-badge,
+  .sidebar.mobile-open .sidebar-logo-text,
+  .sidebar.mobile-open .user-info{opacity:1}
+  .sidebar.mobile-open .nav-lbl{height:16px}
+  
   .page{padding:16px 12px 28px}
   .page-header{margin-bottom:16px;flex-wrap:wrap}
   .page-title{font-size:18px}
@@ -473,6 +516,7 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
   .pm-logo{width:40px;height:40px}
   .pm-name{font-size:10.5px}
   .qr-img-box{width:160px;height:160px}
+  .qr-placeholder{width:160px;height:160px}
   .qr-amount{font-size:14px;padding:8px 20px}
   .timer-track{width:180px}
   .timer-num{font-size:32px}
@@ -483,9 +527,6 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
   .modal-title{font-size:16px}
   .profile-preview{width:90px;height:90px}
   .profile-upload-box{padding:18px;margin:12px}
-  
-  /* Locked field on mobile */
-  .locked-field::after{width:28px;height:28px;font-size:16px}
 }
 @media(max-width:480px){
   .stats-grid{grid-template-columns:1fr}
@@ -570,13 +611,12 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
       
       <div class="card">
         <div class="card-head"><span class="card-title"><span class="ct-dot"></span>Tambah Gmail</span></div>
-        <!-- 🔒 RED X LOCK INDICATOR -->
         <div class="form-row" id="add-form-container">
-          <div class="fg locked-field" id="fg-email">
+          <div class="fg" id="fg-email">
             <label>Alamat Gmail</label>
             <input type="email" id="gmail-input" placeholder="contoh@gmail.com" oninput="clearMsg()" disabled>
           </div>
-          <div class="fg locked-field" id="fg-result">
+          <div class="fg" id="fg-result">
             <label>Jumlah Result (100–1000)</label>
             <input type="number" id="result-input" min="100" max="1000" step="100" value="100" disabled>
           </div>
@@ -587,7 +627,6 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
         </div>
         <div class="alert alert-success" id="msg-ok"></div>
         <div class="alert alert-error" id="msg-err"></div>
-        <!-- Hint when locked -->
         <div id="lock-hint" style="text-align:center;padding:10px;color:var(--red);font-size:11.5px;font-weight:600;display:none">
           🔒 Fitur ini terkunci. <a href="#" onclick="goPage('deposit');return false" style="color:var(--blue);text-decoration:none">Deposit dulu</a> untuk membuka akses.
         </div>
@@ -608,7 +647,7 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
     </div>
   </div>
 
-  <!-- PAGE: DEPOSIT (FULLY WORKING) -->
+  <!-- PAGE: DEPOSIT -->
   <div class="page" id="page-deposit">
     <div class="anim-entry">
       <div class="page-header">
@@ -621,7 +660,11 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
       <div class="card">
         <div class="card-head"><span class="card-title"><span class="ct-dot"></span>Pilih Metode Pembayaran</span></div>
         <div class="deposit-grid" id="deposit-grid"></div>
-        <div class="alert alert-error" id="pm-err" style="display:none;margin-top:0"></div>
+        <!-- ✅ Keterangan status dot -->
+        <div style="display:flex;gap:14px;margin-top:4px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span style="width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block"></span>QR Tersedia</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span style="width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block"></span>QR Belum Diupload Admin</div>
+        </div>
       </div>
 
       <!-- QR Panel -->
@@ -629,21 +672,36 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
         <div class="qr-method-label">
           <div class="ml-icon" id="qr-ml-icon"></div><span id="qr-ml-name">Metode</span>
         </div>
-        <div class="qr-headline">Scan untuk Membayar</div>
-        <div class="qr-sub">Arahkan kamera ke QR Code di bawah</div>
-        <div class="qr-frame">
-          <div class="qr-corner tl"></div><div class="qr-corner tr"></div>
-          <div class="qr-corner bl"></div><div class="qr-corner br"></div>
-          <div class="qr-img-box">
-            <div class="scan-beam"></div>
-            <img id="qr-img" src="" alt="QR">
+        <div class="qr-headline" id="qr-headline">Scan untuk Membayar</div>
+        <div class="qr-sub" id="qr-sub">Arahkan kamera ke QR Code di bawah</div>
+
+        <!-- ✅ QR Image (tampil jika ada) -->
+        <div id="qr-has-image">
+          <div class="qr-frame">
+            <div class="qr-corner tl"></div><div class="qr-corner tr"></div>
+            <div class="qr-corner bl"></div><div class="qr-corner br"></div>
+            <div class="qr-img-box">
+              <div class="scan-beam"></div>
+              <img id="qr-img" src="" alt="QR">
+            </div>
+          </div>
+          <div class="qr-amount">Total: <span id="qr-amount-val">Rp 50.000</span></div>
+          <div class="timer-block" id="timer-block">
+            <div class="timer-lbl">⏱ Batas Waktu</div>
+            <div class="timer-num" id="timer-num">00:00</div>
+            <div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
           </div>
         </div>
-        <div class="qr-amount">Total: <span id="qr-amount-val">Rp 50.000</span></div>
-        <div class="timer-block" id="timer-block">
-          <div class="timer-lbl">⏱ Batas Waktu</div>
-          <div class="timer-num" id="timer-num">00:00</div>
-          <div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
+
+        <!-- ✅ Placeholder (tampil jika QR belum diupload admin) -->
+        <div id="qr-no-image" style="display:none">
+          <div class="qr-placeholder">
+            <div class="qr-placeholder-icon">⏳</div>
+            <div class="qr-placeholder-text">QR belum tersedia. Admin sedang menyiapkan.</div>
+          </div>
+          <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:9px;padding:10px 14px;font-size:12px;color:var(--amber);margin-bottom:16px">
+            ⚠ QR untuk metode ini belum diupload.<br>Kamu tetap bisa upload bukti transfer manual.
+          </div>
         </div>
       </div>
 
@@ -778,7 +836,7 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 </main>
 </div>
 
-<!-- Secret Button (Admin Login ONLY) -->
+<!-- Secret Button -->
 <button class="secret-btn" id="secret-btn" onclick="openAdminModal()" title="Login Admin">🔒</button>
 
 <!-- Admin Login Modal -->
@@ -862,27 +920,23 @@ function totalTime(sec){if(!sec)return'—';if(sec<60)return sec+'d';const m=Mat
 function validGmail(e){return/^[a-zA-Z0-9._%+\-]+@gmail\.com$/.test(e.trim())}
 function pad(n){return String(n).padStart(2,'0')}
 
-/* ══ ACCESS CONTROL: RED X LOCK ══ */
+/* ══ ACCESS CONTROL ══ */
 function updateLockState(){
   const isLocked=!userData.hasPaid && !isAdmin;
-  const container=document.getElementById('add-form-container');
   const hint=document.getElementById('lock-hint');
   const inputs=document.querySelectorAll('#gmail-input,#result-input');
   const btn=document.getElementById('btn-add-gmail');
-  
+  const fgEmail=document.getElementById('fg-email');
+  const fgResult=document.getElementById('fg-result');
   if(isLocked){
-    // SHOW RED X on fields
-    container.classList.add('locked');
-    document.getElementById('fg-email').classList.add('locked-field');
-    document.getElementById('fg-result').classList.add('locked-field');
+    fgEmail.classList.add('locked-field');
+    fgResult.classList.add('locked-field');
     hint.style.display='block';
     inputs.forEach(i=>i.disabled=true);
     btn.disabled=true;
   }else{
-    // HIDE RED X, enable form
-    container.classList.remove('locked');
-    document.getElementById('fg-email').classList.remove('locked-field');
-    document.getElementById('fg-result').classList.remove('locked-field');
+    fgEmail.classList.remove('locked-field');
+    fgResult.classList.remove('locked-field');
     hint.style.display='none';
     inputs.forEach(i=>i.disabled=false);
     btn.disabled=false;
@@ -905,8 +959,16 @@ function goPage(name){
 }
 
 /* ══ MOBILE NAV ══ */
-function toggleMobileNav(){document.getElementById('sidebar').classList.toggle('mobile-open');document.getElementById('nav-overlay').classList.toggle('show');}
-function closeMobileNav(){if(window.innerWidth<=768){document.getElementById('sidebar').classList.remove('mobile-open');document.getElementById('nav-overlay').classList.remove('show');}}
+function toggleMobileNav(){
+  document.getElementById('sidebar').classList.toggle('mobile-open');
+  document.getElementById('nav-overlay').classList.toggle('show');
+}
+function closeMobileNav(){
+  if(window.innerWidth<=768){
+    document.getElementById('sidebar').classList.remove('mobile-open');
+    document.getElementById('nav-overlay').classList.remove('show');
+  }
+}
 
 /* ══ TRACKER ══ */
 function clearMsg(){['msg-ok','msg-err'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none'})}
@@ -938,31 +1000,58 @@ function renderTable(){
 }
 function renderAvatar(name){if(userData.profileImage)return`<img src="${userData.profileImage}" alt="${name}">`;return`<span style="font-size:12px">${initials(name)}</span>`;}
 
-/* ══ DEPOSIT ══ */
+/* ══════════════════════════════
+   ✅ FIX 1: DEPOSIT — semua bisa diklik
+══════════════════════════════ */
 function renderDepositGrid(){
   document.getElementById('deposit-grid').innerHTML=METHODS.map(m=>{
-    const has=!!settings.qrImages[m.id];const sel=selectedMethod===m.id;
-    return`<div class="pm-card ${has?'has-qr':'no-qr'} ${sel?'selected':''}" onclick="${has?`selectMethod('${m.id}')`:`noQrErr()`}" id="mc-${m.id}"><span class="pm-status-dot"></span><div class="pm-logo">${m.logo}</div><div class="pm-name">${m.name}</div></div>`;
+    const has=!!settings.qrImages[m.id];
+    const sel=selectedMethod===m.id;
+    // ✅ Semua method bisa diklik — tidak ada noQrErr
+    return`<div class="pm-card ${has?'has-qr':'no-qr'} ${sel?'selected':''}" onclick="selectMethod('${m.id}')" id="mc-${m.id}">
+      <span class="pm-status-dot"></span>
+      <div class="pm-logo">${m.logo}</div>
+      <div class="pm-name">${m.name}</div>
+    </div>`;
   }).join('');
 }
-function noQrErr(){const el=document.getElementById('pm-err');el.textContent='⚠ Metode belum tersedia. Hubungi admin.';el.style.display='block';setTimeout(()=>el.style.display='none',3000);}
+
 function selectMethod(id){
   stopTimer();selectedMethod=id;
-  document.getElementById('pm-err').style.display='none';
   document.getElementById('expired-box').classList.remove('show');
-  document.getElementById('upload-sec').classList.remove('show');
   document.getElementById('pay-success').classList.remove('show');
   renderDepositGrid();
+
   const m=METHODS.find(x=>x.id===id);
+  const hasQR=!!settings.qrImages[id];
+
+  // ✅ Update label metode
   document.getElementById('qr-ml-icon').innerHTML=m.logo;
   document.getElementById('qr-ml-name').textContent=m.name;
-  document.getElementById('qr-img').src=settings.qrImages[id]||'';
   document.getElementById('qr-panel').classList.add('show');
-  // Show upload section immediately
+
+  // ✅ Toggle antara QR image & placeholder
+  const hasImg=document.getElementById('qr-has-image');
+  const noImg=document.getElementById('qr-no-image');
+  if(hasQR){
+    hasImg.style.display='block';
+    noImg.style.display='none';
+    document.getElementById('qr-img').src=settings.qrImages[id];
+    document.getElementById('qr-headline').textContent='Scan untuk Membayar';
+    document.getElementById('qr-sub').textContent='Arahkan kamera ke QR Code di bawah';
+    // Start timer
+    const totalSec=(parseInt(settings.timerMin)||0)*60+(parseInt(settings.timerSec)||0);
+    if(totalSec>0){document.getElementById('timer-block').style.display='flex';startTimer(totalSec);}
+    else{document.getElementById('timer-block').style.display='none';}
+  }else{
+    hasImg.style.display='none';
+    noImg.style.display='block';
+    document.getElementById('qr-headline').textContent=m.name;
+    document.getElementById('qr-sub').textContent='Upload bukti transfer di bawah';
+  }
+
+  // ✅ Upload section selalu muncul
   document.getElementById('upload-sec').classList.add('show');
-  const totalSec=(parseInt(settings.timerMin)||0)*60+(parseInt(settings.timerSec)||0);
-  if(totalSec>0){document.getElementById('timer-block').style.display='flex';startTimer(totalSec);}
-  else{document.getElementById('timer-block').style.display='none';}
 }
 
 /* ══ TIMER ══ */
@@ -981,7 +1070,7 @@ function onExpired(){document.getElementById('qr-panel').classList.remove('show'
 function retryPay(){document.getElementById('expired-box').classList.remove('show');selectedMethod=null;renderDepositGrid()}
 function resetPay(){stopTimer();selectedMethod=null;proofFile=null;['qr-panel','upload-sec','pay-success','expired-box'].forEach(id=>document.getElementById(id).classList.remove('show'));document.getElementById('proof-file').value='';document.getElementById('preview-wrap').classList.remove('show');document.getElementById('upload-zone').classList.remove('has-file');document.getElementById('sender-name').value='';document.getElementById('paid-amount').value='';renderDepositGrid();}
 
-/* ══ CONFIRM PAYMENT & UNLOCK ══ */
+/* ══ CONFIRM & UNLOCK ══ */
 function confirmPaymentComplete(){
   userData.hasPaid=true;save();updateLockState();resetPay();
   toast('✓ Akses tracker telah dibuka!');goPage('tracker');
@@ -990,33 +1079,82 @@ function confirmPaymentComplete(){
 /* ══ FILE UPLOAD ══ */
 function handleFile(e){const file=e.target.files[0];if(!file)return;if(file.size>5*1024*1024){alert('File terlalu besar! Maks 5MB.');return}proofFile=file;const r=new FileReader();r.onload=ev=>{document.getElementById('prev-img').src=ev.target.result;document.getElementById('preview-wrap').classList.add('show');document.getElementById('upload-zone').classList.add('has-file');};r.readAsDataURL(file);}
 function removeProof(){proofFile=null;document.getElementById('proof-file').value='';document.getElementById('preview-wrap').classList.remove('show');document.getElementById('upload-zone').classList.remove('has-file');}
-window.addEventListener('DOMContentLoaded',()=>{const z=document.getElementById('upload-zone');z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag-over')});z.addEventListener('dragleave',()=>z.classList.remove('drag-over'));z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/')){const dt=new DataTransfer();dt.items.add(f);document.getElementById('proof-file').files=dt.files;handleFile({target:{files:[f]}});}});});
+window.addEventListener('DOMContentLoaded',()=>{
+  const z=document.getElementById('upload-zone');
+  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag-over')});
+  z.addEventListener('dragleave',()=>z.classList.remove('drag-over'));
+  z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/')){const dt=new DataTransfer();dt.items.add(f);document.getElementById('proof-file').files=dt.files;handleFile({target:{files:[f]}});}});
+});
 
 /* ══ SEND PROOF ══ */
 async function sendProof(){
-  const sn=document.getElementById('sender-name').value.trim();const pa=document.getElementById('paid-amount').value.trim();const errEl=document.getElementById('send-err');errEl.style.display='none';
+  const sn=document.getElementById('sender-name').value.trim();
+  const pa=document.getElementById('paid-amount').value.trim();
+  const errEl=document.getElementById('send-err');errEl.style.display='none';
   if(!proofFile){errEl.textContent='⚠ Upload bukti transfer terlebih dahulu.';errEl.style.display='block';return}
   if(!sn){errEl.textContent='⚠ Nama pengirim wajib diisi.';errEl.style.display='block';return}
   if(!pa){errEl.textContent='⚠ Nominal wajib diisi.';errEl.style.display='block';return}
   const btn=document.getElementById('btn-send-proof');btn.disabled=true;btn.textContent='⏳ Mengirim...';
   try{
-    // Demo mode: simulate success
     await new Promise(res=>setTimeout(res,1200));
-    // Production: use EmailJS here
-    stopTimer();document.getElementById('upload-sec').classList.remove('show');document.getElementById('qr-panel').classList.remove('show');document.getElementById('pay-success').classList.add('show');document.getElementById('pay-success').scrollIntoView({behavior:'smooth',block:'center'});
-  }catch(err){console.error(err);errEl.textContent='✕ Gagal: '+(err.message||JSON.stringify(err));errEl.style.display='block';}
-  finally{btn.disabled=false;btn.textContent='📤 Kirim Bukti'}
+    stopTimer();
+    document.getElementById('upload-sec').classList.remove('show');
+    document.getElementById('qr-panel').classList.remove('show');
+    document.getElementById('pay-success').classList.add('show');
+    document.getElementById('pay-success').scrollIntoView({behavior:'smooth',block:'center'});
+  }catch(err){
+    console.error(err);errEl.textContent='✕ Gagal: '+(err.message||JSON.stringify(err));errEl.style.display='block';
+  }finally{btn.disabled=false;btn.textContent='📤 Kirim Bukti'}
 }
 
 /* ══ ACCOUNT ══ */
-function renderAccountPage(){const n=isAdmin?adminInfo.name:userData.displayName;document.getElementById('acct-name-disp').textContent=n;document.getElementById('acct-name-val').textContent=n;const avBig=document.getElementById('acct-av-big');const avText=document.getElementById('acct-av-text');const avImg=document.getElementById('acct-av-img');if(userData.profileImage){avText.style.display='none';avImg.src=userData.profileImage;avImg.style.display='block';}else{avText.style.display='block';avText.textContent=initials(n)||'👤';avImg.style.display='none';}document.getElementById('acct-status-val').textContent=isAdmin?'Admin':'Pengguna Biasa';document.getElementById('acct-role-disp').textContent=isAdmin?'Mode Admin':'Pengguna Biasa';document.getElementById('acct-gmail-row').style.display=isAdmin?'flex':'none';document.getElementById('acct-gmail-val').textContent=isAdmin?adminInfo.gmail:'-';document.getElementById('acct-logout-wrap').style.display=isAdmin?'block':'none';}
-function toggleEditName(){const nameVal=document.getElementById('acct-name-val');const nameInput=document.getElementById('acct-name-input');const btn=document.getElementById('btn-edit-name');if(!editingName){nameInput.value=nameVal.textContent;nameVal.style.display='none';nameInput.style.display='block';nameInput.focus();btn.textContent='💾 Simpan';editingName=true;}else{const newName=nameInput.value.trim();if(newName){userData.displayName=newName;save();nameVal.textContent=newName;document.getElementById('acct-name-disp').textContent=newName;if(!userData.profileImage)document.getElementById('acct-av-text').textContent=initials(newName)||'👤';updateUserPill();toast('✓ Nama diperbarui');}nameVal.style.display='block';nameInput.style.display='none';btn.textContent='✏️ Edit';editingName=false;}}
+function renderAccountPage(){
+  const n=isAdmin?adminInfo.name:userData.displayName;
+  document.getElementById('acct-name-disp').textContent=n;
+  document.getElementById('acct-name-val').textContent=n;
+  const avText=document.getElementById('acct-av-text');
+  const avImg=document.getElementById('acct-av-img');
+  if(userData.profileImage){avText.style.display='none';avImg.src=userData.profileImage;avImg.style.display='block';}
+  else{avText.style.display='block';avText.textContent=initials(n)||'👤';avImg.style.display='none';}
+  document.getElementById('acct-status-val').textContent=isAdmin?'Admin':'Pengguna Biasa';
+  document.getElementById('acct-role-disp').textContent=isAdmin?'Mode Admin':'Pengguna Biasa';
+  document.getElementById('acct-gmail-row').style.display=isAdmin?'flex':'none';
+  document.getElementById('acct-gmail-val').textContent=isAdmin?adminInfo.gmail:'-';
+  document.getElementById('acct-logout-wrap').style.display=isAdmin?'block':'none';
+}
+function toggleEditName(){
+  const nameVal=document.getElementById('acct-name-val');
+  const nameInput=document.getElementById('acct-name-input');
+  const btn=document.getElementById('btn-edit-name');
+  if(!editingName){nameInput.value=nameVal.textContent;nameVal.style.display='none';nameInput.style.display='block';nameInput.focus();btn.textContent='💾 Simpan';editingName=true;}
+  else{const newName=nameInput.value.trim();if(newName){userData.displayName=newName;save();nameVal.textContent=newName;document.getElementById('acct-name-disp').textContent=newName;if(!userData.profileImage)document.getElementById('acct-av-text').textContent=initials(newName)||'👤';updateUserPill();toast('✓ Nama diperbarui');}nameVal.style.display='block';nameInput.style.display='none';btn.textContent='✏️ Edit';editingName=false;}
+}
 
 /* ══ PROFILE IMAGE ══ */
-function openProfileUpload(){const previewText=document.getElementById('profile-preview-text');const previewImg=document.getElementById('profile-preview-img');const removeBtn=document.getElementById('profile-remove-btn');const saveBtn=document.getElementById('profile-save-btn');if(userData.profileImage){previewText.style.display='none';previewImg.src=userData.profileImage;previewImg.style.display='block';removeBtn.style.display='inline-flex';saveBtn.style.display='none';tempProfileImage=userData.profileImage;}else{previewText.style.display='block';previewText.textContent=initials(userData.displayName)||'👤';previewImg.style.display='none';removeBtn.style.display='none';saveBtn.style.display='none';tempProfileImage=null;}document.getElementById('profile-upload-modal').classList.add('show');}
+function openProfileUpload(){
+  const previewText=document.getElementById('profile-preview-text');
+  const previewImg=document.getElementById('profile-preview-img');
+  const removeBtn=document.getElementById('profile-remove-btn');
+  const saveBtn=document.getElementById('profile-save-btn');
+  if(userData.profileImage){previewText.style.display='none';previewImg.src=userData.profileImage;previewImg.style.display='block';removeBtn.style.display='inline-flex';saveBtn.style.display='none';tempProfileImage=userData.profileImage;}
+  else{previewText.style.display='block';previewText.textContent=initials(userData.displayName)||'👤';previewImg.style.display='none';removeBtn.style.display='none';saveBtn.style.display='none';tempProfileImage=null;}
+  document.getElementById('profile-upload-modal').classList.add('show');
+}
 function closeProfileUpload(){document.getElementById('profile-upload-modal').classList.remove('show');document.getElementById('profile-file-input').value='';tempProfileImage=null}
-function handleProfileUpload(e){const file=e.target.files[0];if(!file)return;if(file.size>3*1024*1024){alert('File terlalu besar! Maks 3MB.');return}const reader=new FileReader();reader.onload=function(ev){tempProfileImage=ev.target.result;const previewText=document.getElementById('profile-preview-text');const previewImg=document.getElementById('profile-preview-img');const saveBtn=document.getElementById('profile-save-btn');previewText.style.display='none';previewImg.src=tempProfileImage;previewImg.style.display='block';saveBtn.style.display='inline-flex';toast('✓ Foto dipilih. Klik Simpan.');};reader.readAsDataURL(file);}
-function removeProfileImage(){tempProfileImage=null;userData.profileImage=null;save();const previewText=document.getElementById('profile-preview-text');const previewImg=document.getElementById('profile-preview-img');const removeBtn=document.getElementById('profile-remove-btn');const saveBtn=document.getElementById('profile-save-btn');previewText.style.display='block';previewText.textContent=initials(userData.displayName)||'👤';previewImg.style.display='none';removeBtn.style.display='none';saveBtn.style.display='none';updateUserPill();renderAccountPage();renderAll();toast('✓ Foto dihapus');}
+function handleProfileUpload(e){
+  const file=e.target.files[0];if(!file)return;if(file.size>3*1024*1024){alert('File terlalu besar! Maks 3MB.');return}
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    tempProfileImage=ev.target.result;
+    document.getElementById('profile-preview-text').style.display='none';
+    document.getElementById('profile-preview-img').src=tempProfileImage;
+    document.getElementById('profile-preview-img').style.display='block';
+    document.getElementById('profile-save-btn').style.display='inline-flex';
+    toast('✓ Foto dipilih. Klik Simpan.');
+  };
+  reader.readAsDataURL(file);
+}
+function removeProfileImage(){tempProfileImage=null;userData.profileImage=null;save();document.getElementById('profile-preview-text').style.display='block';document.getElementById('profile-preview-text').textContent=initials(userData.displayName)||'👤';document.getElementById('profile-preview-img').style.display='none';document.getElementById('profile-remove-btn').style.display='none';document.getElementById('profile-save-btn').style.display='none';updateUserPill();renderAccountPage();renderAll();toast('✓ Foto dihapus');}
 function saveProfileImage(){if(!tempProfileImage)return;userData.profileImage=tempProfileImage;save();updateUserPill();renderAccountPage();renderAll();closeProfileUpload();toast('✓ Foto profil diperbarui');}
 
 /* ══ ADMIN ══ */
@@ -1028,16 +1166,42 @@ function uploadQr(e,id){const f=e.target.files[0];if(!f)return;const r=new FileR
 function removeQr(id){delete settings.qrImages[id];save();const prev=document.getElementById('msprev-'+id);const del=document.getElementById('msdel-'+id);const badge=document.getElementById('msbadge-'+id);if(prev){prev.src='';prev.classList.remove('show')}if(del)del.classList.remove('show');if(badge){badge.textContent='✗ Kosong';badge.className='ms-badge no'}renderDepositGrid();}
 function openAdminModal(){if(isAdmin){toast('Sudah login admin');return;}document.getElementById('admin-overlay').classList.add('open');setTimeout(()=>document.getElementById('m-name').focus(),100)}
 function closeModal(){document.getElementById('admin-overlay').classList.remove('open')}
-function doLogin(){const name=document.getElementById('m-name').value.trim();const gmail=document.getElementById('m-gmail').value.trim().toLowerCase();const pass=document.getElementById('m-pass').value;const err=document.getElementById('modal-err');if(!name){err.textContent='Nama wajib diisi';err.classList.add('show');return}if(!validGmail(gmail)){err.textContent='Format Gmail tidak valid';err.classList.add('show');return}if(pass!==SECRET_PASSWORD){err.textContent='Password salah';err.classList.add('show');return}isAdmin=true;adminInfo={name,gmail};closeModal();applyAdmin();toast('✓ Login admin: '+name);updateLockState()}
+function doLogin(){
+  const name=document.getElementById('m-name').value.trim();
+  const gmail=document.getElementById('m-gmail').value.trim().toLowerCase();
+  const pass=document.getElementById('m-pass').value;
+  const err=document.getElementById('modal-err');
+  if(!name){err.textContent='Nama wajib diisi';err.classList.add('show');return}
+  if(!validGmail(gmail)){err.textContent='Format Gmail tidak valid';err.classList.add('show');return}
+  if(pass!==SECRET_PASSWORD){err.textContent='Password salah';err.classList.add('show');return}
+  isAdmin=true;adminInfo={name,gmail};closeModal();applyAdmin();toast('✓ Login admin: '+name);updateLockState();
+}
 function logout(){isAdmin=false;adminInfo={name:'',gmail:''};document.getElementById('admin-nav-section').style.display='none';if(activePage==='admin')goPage('tracker');updateUserPill();renderAll();renderAccountPage();updateLockState()}
 function applyAdmin(){document.getElementById('admin-nav-section').style.display='block';updateUserPill();renderAll()}
-function updateUserPill(){const name=isAdmin?adminInfo.name:userData.displayName;const avInitials=document.getElementById('user-av-initials');const avText=document.getElementById('user-av-text');const avImg=document.getElementById('user-av-img');if(userData.profileImage){avText.style.display='none';avImg.src=userData.profileImage;avImg.style.display='block';}else{avText.style.display='block';avText.textContent=initials(name)||'?';avImg.style.display='none';}document.getElementById('user-display-name').textContent=name;document.getElementById('user-display-role').textContent=isAdmin?'Admin':'Pengguna';document.getElementById('secret-btn').style.display=isAdmin?'none':'flex';}
+function updateUserPill(){
+  const name=isAdmin?adminInfo.name:userData.displayName;
+  const avText=document.getElementById('user-av-text');
+  const avImg=document.getElementById('user-av-img');
+  if(userData.profileImage){avText.style.display='none';avImg.src=userData.profileImage;avImg.style.display='block';}
+  else{avText.style.display='block';avText.textContent=initials(name)||'?';avImg.style.display='none';}
+  document.getElementById('user-display-name').textContent=name;
+  document.getElementById('user-display-role').textContent=isAdmin?'Admin':'Pengguna';
+  document.getElementById('secret-btn').style.display=isAdmin?'none':'flex';
+}
 
 /* ══ TOAST ══ */
 let _toastTimer;function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>t.classList.remove('show'),2500)}
 
 /* ══ KEYBOARD ══ */
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(document.getElementById('admin-overlay').classList.contains('open'))closeModal();if(document.getElementById('profile-upload-modal').classList.contains('show'))closeProfileUpload();if(editingName)toggleEditName();}if(e.key==='Enter'&&editingName&&document.activeElement===document.getElementById('acct-name-input'))toggleEditName();});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(document.getElementById('admin-overlay').classList.contains('open'))closeModal();
+    if(document.getElementById('profile-upload-modal').classList.contains('show'))closeProfileUpload();
+    if(editingName)toggleEditName();
+    closeMobileNav();
+  }
+  if(e.key==='Enter'&&editingName&&document.activeElement===document.getElementById('acct-name-input'))toggleEditName();
+});
 document.getElementById('gmail-input').addEventListener('keydown',e=>{if(e.key==='Enter')addEntry()});
 document.getElementById('admin-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal()});
 document.getElementById('profile-upload-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeProfileUpload()});

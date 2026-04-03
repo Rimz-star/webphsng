@@ -1198,7 +1198,6 @@ function setQrFromUrl(id){
   renderDepositGrid();
   toast('✓ QR '+id.toUpperCase()+' dari URL diset!');
 }
-function uploadQr
 function uploadQr(e,id){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{settings.qrImages[id]=ev.target.result;save();const prev=document.getElementById('msprev-'+id);const del=document.getElementById('msdel-'+id);const badge=document.getElementById('msbadge-'+id);if(prev){prev.src=ev.target.result;prev.classList.add('show')}if(del)del.classList.add('show');if(badge){badge.textContent='✓ Aktif';badge.className='ms-badge ok'}renderDepositGrid();toast('✓ QR '+id.toUpperCase()+' diupload');};r.readAsDataURL(f);}
 function removeQr(id){delete settings.qrImages[id];save();const prev=document.getElementById('msprev-'+id);const del=document.getElementById('msdel-'+id);const badge=document.getElementById('msbadge-'+id);if(prev){prev.src='';prev.classList.remove('show')}if(del)del.classList.remove('show');if(badge){badge.textContent='✗ Kosong';badge.className='ms-badge no'}renderDepositGrid();}
 function openAdminModal(){if(isAdmin){toast('Sudah login admin');return;}document.getElementById('admin-overlay').classList.add('open');setTimeout(()=>document.getElementById('m-name').focus(),100)}

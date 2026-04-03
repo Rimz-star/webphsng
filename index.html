@@ -4,147 +4,540 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gmail Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0d0f14;
-  --surface: #13161e;
-  --surface2: #1a1e29;
-  --border: rgba(255,255,255,0.07);
-  --border2: rgba(255,255,255,0.13);
-  --text: #e8eaf0;
-  --muted: #6b7280;
-  --accent: #4f8ef7;
-  --accent2: #3b6fd4;
-  --success: #22c55e;
-  --success-bg: rgba(34,197,94,0.1);
-  --danger: #ef4444;
-  --danger-bg: rgba(239,68,68,0.1);
-  --gold: #f5c518;
+  --bg: #060810;
+  --bg2: #0b0e18;
+  --panel: #0f1320;
+  --panel2: #151a2e;
+  --border: rgba(99,130,255,0.12);
+  --border2: rgba(99,130,255,0.22);
+  --text: #e4e8ff;
+  --muted: #5a6380;
+  --muted2: #7d8ab0;
+  --blue: #4f79f7;
+  --blue2: #3558d4;
+  --cyan: #38d4f5;
+  --purple: #a06af8;
+  --green: #2de08b;
+  --green-bg: rgba(45,224,139,0.08);
+  --red: #f75a5a;
+  --red-bg: rgba(247,90,90,0.08);
+  --gold: #f5c842;
+  --glow: rgba(79,121,247,0.35);
+  --glow2: rgba(160,106,248,0.25);
+  --radius: 14px;
+  --radius-sm: 8px;
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:2rem 1rem 4rem}
-a{color:inherit}
-.container{max-width:900px;margin:0 auto}
 
-/* HEADER */
-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2rem;gap:1rem;flex-wrap:wrap}
-.header-left{flex:1;min-width:0}
-.page-title{font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.2;cursor:default;display:flex;align-items:center;gap:8px}
-.title-text{outline:none;background:none;border:none;color:var(--text);font-family:'Sora',sans-serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;width:100%;cursor:default;pointer-events:none}
-.title-text[contenteditable="true"]{pointer-events:auto;cursor:text;border-bottom:2px solid var(--accent);padding-bottom:2px}
-.edit-title-btn{display:none;background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:2px 6px;border-radius:4px;transition:color 0.15s}
-.edit-title-btn:hover{color:var(--accent)}
-.page-sub{font-size:13px;color:var(--muted);margin-top:5px}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-.admin-badge{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border2);border-radius:99px;padding:6px 14px 6px 8px}
-.admin-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#4f8ef7,#a855f7);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff}
-.admin-name{font-size:13px;font-weight:500}
-.admin-gmail{font-size:11px;color:var(--muted)}
-.btn-logout{background:none;border:1px solid var(--border2);border-radius:6px;padding:3px 10px;font-size:11px;color:var(--muted);cursor:pointer;margin-left:4px;transition:all 0.15s}
-.btn-logout:hover{color:var(--danger);border-color:var(--danger)}
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 0 0 6rem;
+  overflow-x: hidden;
+}
 
-/* STATS */
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem}
-@media(max-width:500px){.stats{grid-template-columns:1fr 1fr}}
-.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem}
-.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px}
-.stat-value{font-size:24px;font-weight:700;font-family:'DM Mono',monospace}
+/* ─── GRID BACKGROUND ─── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(79,121,247,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79,121,247,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
 
-/* CARD */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1.25rem}
-.card-title{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:1.2rem}
+/* ─── GLOW ORBS ─── */
+.orb1, .orb2 {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+.orb1 { width: 500px; height: 500px; top: -150px; left: -100px; background: radial-gradient(circle, rgba(79,121,247,0.12) 0%, transparent 70%); }
+.orb2 { width: 400px; height: 400px; bottom: 0; right: -100px; background: radial-gradient(circle, rgba(160,106,248,0.1) 0%, transparent 70%); }
 
-/* FORM */
-.form-row{display:grid;grid-template-columns:1fr 200px auto;gap:12px;align-items:end}
-@media(max-width:600px){.form-row{grid-template-columns:1fr}}
-.form-group label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em}
-.form-group input{width:100%;height:42px;padding:0 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;font-size:14px;color:var(--text);font-family:'Sora',sans-serif;outline:none;transition:border-color 0.15s}
-.form-group input:focus{border-color:var(--accent)}
-.form-group input::placeholder{color:var(--muted)}
-.btn-add{height:42px;padding:0 22px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;font-family:'Sora',sans-serif;cursor:pointer;white-space:nowrap;transition:background 0.15s,transform 0.1s}
-.btn-add:hover{background:var(--accent2)}
-.btn-add:active{transform:scale(0.97)}
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  position: relative;
+  z-index: 1;
+}
 
-/* ALERTS */
-.alert{display:none;font-size:13px;border-radius:8px;padding:10px 14px;margin-top:12px}
-.alert-success{background:var(--success-bg);color:var(--success);border:1px solid rgba(34,197,94,0.25)}
-.alert-error{background:var(--danger-bg);color:var(--danger);border:1px solid rgba(239,68,68,0.25)}
+/* ─── TOP BAR ─── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
 
-/* TABLE */
-.table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:14px}
-thead th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid var(--border)}
-tbody td{padding:13px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
-tbody tr:last-child td{border-bottom:none}
-tbody tr{transition:background 0.12s}
-tbody tr:hover td{background:var(--surface2)}
-.no-col{color:var(--muted);font-family:'DM Mono',monospace;font-size:13px}
-.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#4f8ef7,#a855f7);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;margin-right:10px}
-.name-cell{display:flex;align-items:center}
-.name-text{font-weight:500;font-size:14px}
-.gmail-text{color:var(--muted);font-size:13px;font-family:'DM Mono',monospace}
-.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(79,142,247,0.15);color:var(--accent);font-family:'DM Mono',monospace}
-.time-text{color:var(--muted);font-size:13px;font-family:'DM Mono',monospace}
-.btn-del{display:none;align-items:center;gap:4px;background:none;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:5px 12px;font-size:12px;font-weight:500;font-family:'Sora',sans-serif;color:var(--danger);cursor:pointer;transition:all 0.12s}
-.btn-del:hover{background:var(--danger-bg)}
-.btn-del.visible{display:inline-flex}
-.empty-row td{text-align:center;padding:3rem;color:var(--muted);font-size:14px}
-.empty-icon{font-size:30px;display:block;margin-bottom:10px}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 0 18px var(--glow);
+  flex-shrink: 0;
+}
+.logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  background: linear-gradient(90deg, var(--text), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  outline: none;
+  border: none;
+  font-family: 'Space Grotesk', sans-serif;
+}
+.logo-text[contenteditable="true"] {
+  border-bottom: 2px solid var(--blue);
+  padding-bottom: 2px;
+}
+.edit-title-btn {
+  display: none;
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  color: var(--muted2);
+  font-size: 13px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.edit-title-btn:hover { color: var(--blue); border-color: var(--blue); }
 
-/* MODAL OVERLAY */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:opacity 0.2s}
-.modal-overlay.open{opacity:1;pointer-events:auto}
-.modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:2rem;width:100%;max-width:400px;transform:translateY(20px) scale(0.97);transition:transform 0.25s;position:relative}
-.modal-overlay.open .modal{transform:translateY(0) scale(1)}
-.modal-close{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px;line-height:1}
-.modal-close:hover{color:var(--text)}
-.modal-title{font-size:17px;font-weight:700;margin-bottom:6px}
-.modal-sub{font-size:13px;color:var(--muted);margin-bottom:1.5rem}
-.modal .form-group{margin-bottom:14px}
-.modal .form-group:last-of-type{margin-bottom:20px}
-.btn-login{width:100%;height:44px;background:var(--accent);color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:600;font-family:'Sora',sans-serif;cursor:pointer;transition:background 0.15s}
-.btn-login:hover{background:var(--accent2)}
-.modal-err{font-size:13px;color:var(--danger);margin-top:10px;text-align:center;min-height:20px}
+.topbar-right { display: flex; align-items: center; gap: 10px; }
 
-/* SECRET TRIGGER */
-.secret-btn{position:fixed;bottom:16px;right:16px;width:44px;height:44px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);opacity:0.18;cursor:pointer;transition:opacity 0.2s;z-index:99;display:flex;align-items:center;justify-content:center;font-size:18px;-webkit-tap-highlight-color:transparent}
-.secret-btn:hover,.secret-btn:active{opacity:0.55}
+/* Admin badge */
+#admin-badge { display: none; }
+.admin-pill {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--panel2);
+  border: 1px solid var(--border2);
+  border-radius: 99px;
+  padding: 5px 12px 5px 6px;
+}
+.admin-av {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff;
+  box-shadow: 0 0 10px var(--glow);
+}
+.admin-info { line-height: 1.3; }
+.admin-name-lbl { font-size: 12px; font-weight: 600; }
+.admin-gmail-lbl { font-size: 10px; color: var(--muted2); font-family: 'JetBrains Mono', monospace; }
+.btn-logout {
+  background: none;
+  border: 1px solid rgba(247,90,90,0.3);
+  border-radius: 6px;
+  padding: 3px 9px;
+  font-size: 11px;
+  font-family: 'Space Grotesk', sans-serif;
+  color: var(--red);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-logout:hover { background: var(--red-bg); }
 
-/* ADMIN PANEL EXTRA */
-.admin-controls{display:none;gap:10px;flex-wrap:wrap;margin-bottom:1rem}
-.admin-controls.visible{display:flex}
+/* ─── STATS ─── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 2rem;
+}
+@media(max-width:520px) { .stats { grid-template-columns: 1fr 1fr; } }
+
+.stat {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.4rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.stat:hover { border-color: var(--border2); transform: translateY(-2px); }
+.stat::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+  opacity: 0.5;
+}
+.stat:nth-child(2)::after { background: linear-gradient(90deg, var(--purple), var(--blue)); }
+.stat:nth-child(3)::after { background: linear-gradient(90deg, var(--cyan), var(--green)); }
+.stat-lbl {
+  font-size: 11px;
+  color: var(--muted2);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+.stat-val {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, var(--text), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.stat:nth-child(2) .stat-val { background: linear-gradient(135deg, var(--text), var(--purple)); -webkit-background-clip: text; background-clip: text; }
+.stat:nth-child(3) .stat-val { font-size: 18px; padding-top: 5px; background: linear-gradient(135deg, var(--text), var(--green)); -webkit-background-clip: text; background-clip: text; }
+
+/* ─── CARD ─── */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.6rem;
+  margin-bottom: 1.25rem;
+  transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--border2); }
+.card-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted2);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title::before {
+  content: '';
+  display: inline-block;
+  width: 3px; height: 14px;
+  background: linear-gradient(180deg, var(--blue), var(--purple));
+  border-radius: 99px;
+}
+
+/* ─── FORM ─── */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 220px auto;
+  gap: 12px;
+  align-items: end;
+}
+@media(max-width:620px) { .form-row { grid-template-columns: 1fr; } }
+
+.form-group label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 7px;
+}
+.form-group input {
+  width: 100%; height: 44px;
+  padding: 0 14px;
+  background: var(--panel2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--text);
+  font-family: 'Space Grotesk', sans-serif;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.form-group input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(79,121,247,0.15);
+}
+.form-group input::placeholder { color: var(--muted); }
+
+.btn-add {
+  height: 44px; padding: 0 24px;
+  background: linear-gradient(135deg, var(--blue), var(--blue2));
+  color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600;
+  font-family: 'Space Grotesk', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  box-shadow: 0 4px 20px var(--glow);
+  position: relative;
+  overflow: hidden;
+}
+.btn-add::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+  opacity: 0; transition: opacity 0.15s;
+}
+.btn-add:hover::before { opacity: 1; }
+.btn-add:hover { transform: translateY(-1px); box-shadow: 0 6px 25px var(--glow); }
+.btn-add:active { transform: scale(0.97); }
+
+/* Alerts */
+.alert {
+  display: none;
+  font-size: 13px;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin-top: 12px;
+}
+.alert-success { background: var(--green-bg); color: var(--green); border: 1px solid rgba(45,224,139,0.2); }
+.alert-error { background: var(--red-bg); color: var(--red); border: 1px solid rgba(247,90,90,0.2); }
+
+/* ─── TABLE ─── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+thead th {
+  text-align: left;
+  padding: 11px 14px;
+  font-size: 10px; font-weight: 600;
+  color: var(--muted2);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 14px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr { transition: background 0.12s; }
+tbody tr:hover td { background: var(--panel2); }
+
+.no-col { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+.avatar {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff;
+  flex-shrink: 0; margin-right: 10px;
+  box-shadow: 0 0 12px var(--glow);
+}
+.name-cell { display: flex; align-items: center; }
+.name-text { font-weight: 600; font-size: 14px; }
+.gmail-text { color: var(--muted2); font-size: 13px; font-family: 'JetBrains Mono', monospace; }
+
+.badge {
+  display: inline-block;
+  padding: 4px 11px;
+  border-radius: 99px;
+  font-size: 12px; font-weight: 600;
+  background: rgba(79,121,247,0.12);
+  color: var(--cyan);
+  font-family: 'JetBrains Mono', monospace;
+  border: 1px solid rgba(79,121,247,0.2);
+}
+.time-text { color: var(--muted2); font-size: 13px; font-family: 'JetBrains Mono', monospace; }
+
+.btn-del {
+  display: none;
+  align-items: center; gap: 5px;
+  background: none;
+  border: 1px solid rgba(247,90,90,0.25);
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 12px; font-weight: 500;
+  font-family: 'Space Grotesk', sans-serif;
+  color: var(--red);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.btn-del:hover { background: var(--red-bg); border-color: rgba(247,90,90,0.5); }
+.btn-del.visible { display: inline-flex; }
+
+.empty-row td {
+  text-align: center;
+  padding: 3.5rem;
+  color: var(--muted);
+  font-size: 14px;
+}
+.empty-icon { font-size: 32px; display: block; margin-bottom: 10px; }
+
+/* ─── MODAL ─── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: auto; }
+
+.modal {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 18px;
+  padding: 2rem 2rem 1.8rem;
+  width: 100%; max-width: 420px;
+  transform: translateY(24px) scale(0.96);
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px var(--border);
+}
+.modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+.modal-close {
+  position: absolute; top: 14px; right: 14px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted2); font-size: 14px;
+  cursor: pointer; padding: 4px 8px; line-height: 1;
+  transition: all 0.15s;
+}
+.modal-close:hover { color: var(--text); border-color: var(--border2); }
+
+.modal-badge {
+  width: 48px; height: 48px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  margin-bottom: 1.2rem;
+  box-shadow: 0 0 24px var(--glow);
+}
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 5px; }
+.modal-sub { font-size: 13px; color: var(--muted2); margin-bottom: 1.6rem; line-height: 1.5; }
+.modal .form-group { margin-bottom: 14px; }
+.modal .form-group:last-of-type { margin-bottom: 1.4rem; }
+
+.btn-login {
+  width: 100%; height: 46px;
+  background: linear-gradient(135deg, var(--blue), var(--blue2));
+  color: #fff; border: none; border-radius: 10px;
+  font-size: 15px; font-weight: 600;
+  font-family: 'Space Grotesk', sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 0 4px 20px var(--glow);
+}
+.btn-login:hover { transform: translateY(-1px); box-shadow: 0 6px 28px var(--glow); }
+
+.modal-err {
+  font-size: 13px; color: var(--red);
+  margin-top: 10px; text-align: center;
+  min-height: 20px; background: var(--red-bg);
+  border-radius: 6px; padding: 6px 12px;
+  display: none;
+}
+.modal-err.show { display: block; }
+
+/* Secret btn */
+.secret-btn {
+  position: fixed; bottom: 18px; right: 18px;
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+  opacity: 0.2;
+  transition: opacity 0.2s;
+  z-index: 99;
+  display: flex; align-items: center; justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.secret-btn:hover, .secret-btn:active { opacity: 0.6; }
+
+/* Sub text */
+#header-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+/* Animations */
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px);} to { opacity:1; transform:translateY(0);} }
+.container > * { animation: fadeUp 0.4s ease both; }
+.container > *:nth-child(1) { animation-delay: 0.05s; }
+.container > *:nth-child(2) { animation-delay: 0.1s; }
+.container > *:nth-child(3) { animation-delay: 0.15s; }
+.container > *:nth-child(4) { animation-delay: 0.2s; }
 </style>
 </head>
 <body>
+
+<div class="orb1"></div>
+<div class="orb2"></div>
+
 <div class="container">
 
-  <!-- HEADER -->
-  <header>
-    <div class="header-left">
-      <div class="page-title">
-        <span id="title-display" contenteditable="false" class="title-text" spellcheck="false">Gmail Tracker</span>
-        <button class="edit-title-btn" id="edit-title-btn" title="Edit judul" onclick="toggleEditTitle()">✏️</button>
-      </div>
-      <p class="page-sub" id="header-sub">Kelola daftar Gmail dan result secara efisien</p>
-    </div>
-    <div id="admin-badge" style="display:none">
-      <div class="admin-badge">
-        <div class="admin-avatar" id="badge-avatar">A</div>
-        <div>
-          <div class="admin-name" id="badge-name">Admin</div>
-          <div class="admin-gmail" id="badge-gmail">-</div>
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-icon">📬</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span id="title-display" contenteditable="false" class="logo-text" spellcheck="false">Gmail Tracker</span>
+          <button class="edit-title-btn" id="edit-title-btn" onclick="toggleEditTitle()">✏️ Edit</button>
         </div>
-        <button class="btn-logout" onclick="logout()">Keluar</button>
+        <p id="header-sub">Kelola daftar Gmail dan result secara efisien</p>
       </div>
     </div>
-  </header>
+    <div class="topbar-right">
+      <div id="admin-badge">
+        <div class="admin-pill">
+          <div class="admin-av" id="badge-avatar">A</div>
+          <div class="admin-info">
+            <div class="admin-name-lbl" id="badge-name">Admin</div>
+            <div class="admin-gmail-lbl" id="badge-gmail">-</div>
+          </div>
+          <button class="btn-logout" onclick="logout()">Keluar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- STATS -->
   <div class="stats">
-    <div class="stat"><div class="stat-label">Total Gmail</div><div class="stat-value" id="stat-total">0</div></div>
-    <div class="stat"><div class="stat-label">Total Result</div><div class="stat-value" id="stat-result">0</div></div>
-    <div class="stat"><div class="stat-label">Est. Selesai</div><div class="stat-value" id="stat-time" style="font-size:16px;padding-top:4px">—</div></div>
+    <div class="stat">
+      <div class="stat-lbl">Total Gmail</div>
+      <div class="stat-val" id="stat-total">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Total Result</div>
+      <div class="stat-val" id="stat-result">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Est. Selesai</div>
+      <div class="stat-val" id="stat-time">—</div>
+    </div>
   </div>
 
   <!-- ADD FORM -->
@@ -160,7 +553,7 @@ tbody tr:hover td{background:var(--surface2)}
         <input type="number" id="result-input" min="100" max="1000" step="100" value="100">
       </div>
       <div class="form-group">
-        <label style="visibility:hidden">x</label>
+        <label style="visibility:hidden">‎</label>
         <button class="btn-add" onclick="addEntry()">+ Tambah</button>
       </div>
     </div>
@@ -179,37 +572,34 @@ tbody tr:hover td{background:var(--surface2)}
             <th>Nama</th>
             <th>Gmail</th>
             <th>Jumlah Result</th>
-            <th>Perkiraan Selesai</th>
+            <th>Est. Selesai</th>
             <th id="del-col" style="width:100px;display:none"></th>
           </tr>
         </thead>
-        <tbody id="table-body">
-          <tr class="empty-row">
-            <td colspan="6"><span class="empty-icon">📭</span>Belum ada data. Tambahkan Gmail di atas.</td>
-          </tr>
-        </tbody>
+        <tbody id="table-body"></tbody>
       </table>
     </div>
   </div>
 
 </div>
 
-<!-- SECRET BUTTON -->
-<button class="secret-btn" id="secret-btn" title="" onclick="openAdminModal()">🔒</button>
+<!-- SECRET BTN -->
+<button class="secret-btn" id="secret-btn" onclick="openAdminModal()">🔒</button>
 
-<!-- ADMIN LOGIN MODAL -->
+<!-- ADMIN MODAL -->
 <div class="modal-overlay" id="admin-modal">
   <div class="modal">
     <button class="modal-close" onclick="closeAdminModal()">✕</button>
-    <div class="modal-title">🔐 Panel Admin</div>
-    <div class="modal-sub">Masuk dengan akun admin untuk mengakses kontrol penuh.</div>
+    <div class="modal-badge">🔐</div>
+    <div class="modal-title">Panel Admin</div>
+    <div class="modal-sub">Masuk dengan akun admin untuk mengakses kontrol penuh termasuk hapus data.</div>
     <div class="form-group">
       <label>Nama Admin</label>
-      <input type="text" id="admin-name-input" placeholder="Nama lengkap Anda">
+      <input type="text" id="admin-name-input" placeholder="Nama lengkap Anda" autocomplete="off">
     </div>
     <div class="form-group">
       <label>Gmail Admin</label>
-      <input type="email" id="admin-gmail-input" placeholder="admin@gmail.com">
+      <input type="email" id="admin-gmail-input" placeholder="admin@gmail.com" autocomplete="off">
     </div>
     <div class="form-group">
       <label>Password Rahasia</label>
@@ -221,14 +611,26 @@ tbody tr:hover td{background:var(--surface2)}
 </div>
 
 <script>
-/* ── CONFIG ── ubah password di sini ────────────────────── */
+/* ── CONFIG ── */
 const SECRET_PASSWORD = 'MAHALSEH12';
-/* ────────────────────────────────────────────────────────── */
+const STORAGE_KEY = 'gmail_tracker_entries';
 
+/* ── STATE ── */
 let entries = [];
 let isAdmin = false;
 let adminInfo = { name: '', gmail: '' };
 let editingTitle = false;
+
+/* ── LOCALSTORAGE ── */
+function saveToStorage() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); } catch(e) {}
+}
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) entries = JSON.parse(raw);
+  } catch(e) { entries = []; }
+}
 
 /* ── HELPERS ── */
 function firstName(email) {
@@ -237,18 +639,20 @@ function firstName(email) {
   const first = cleaned.split(' ')[0] || local;
   return first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
 }
-function initials(name) { return name ? name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() : '?'; }
+function initials(name) {
+  return name ? name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() : '?';
+}
 function estimateTime(count) {
   const s = Math.round(count * 0.8);
-  if (s < 60) return s + ' dtk';
+  if (s < 60) return s + 's';
   const m = Math.floor(s/60), r = s%60;
-  return r ? m+'m '+r+'s' : m+' menit';
+  return r ? m+'m '+r+'s' : m+'m';
 }
 function totalTimeStr(sec) {
   if (!sec) return '—';
-  if (sec < 60) return sec + ' dtk';
+  if (sec < 60) return sec + 's';
   const m = Math.floor(sec/60), s = sec%60;
-  if (m < 60) return s ? m+'m '+s+'s' : m+' menit';
+  if (m < 60) return s ? m+'m '+s+'s' : m+'m';
   const h = Math.floor(m/60), rm = m%60;
   return h+'j '+rm+'m';
 }
@@ -271,7 +675,7 @@ function showSuccess(msg) {
   setTimeout(()=>el.style.display='none', 3000);
 }
 
-/* ── ADD ENTRY ── */
+/* ── ADD / DELETE ── */
 function addEntry() {
   const email=document.getElementById('gmail-input').value.trim().toLowerCase();
   const count=parseInt(document.getElementById('result-input').value);
@@ -280,16 +684,17 @@ function addEntry() {
   if (isNaN(count)||count<100||count>1000) { showErr('Jumlah result harus antara 100–1000.'); return; }
   if (entries.find(e=>e.email===email)) { showErr('Gmail ini sudah ada di daftar.'); return; }
   entries.push({ email, count });
+  saveToStorage();
   showSuccess('Gmail berhasil ditambahkan!');
   document.getElementById('gmail-input').value='';
   document.getElementById('result-input').value='100';
   document.getElementById('gmail-input').focus();
   renderAll();
 }
-
 function deleteEntry(email) {
   if (!isAdmin) return;
   entries=entries.filter(e=>e.email!==email);
+  saveToStorage();
   renderAll();
 }
 
@@ -306,7 +711,7 @@ function renderStats() {
 
 function renderTable() {
   const tbody=document.getElementById('table-body');
-  document.getElementById('del-col').style.display = isAdmin ? 'table-cell' : 'none';
+  document.getElementById('del-col').style.display=isAdmin?'table-cell':'none';
   if (!entries.length) {
     tbody.innerHTML='<tr class="empty-row"><td colspan="6"><span class="empty-icon">📭</span>Belum ada data. Tambahkan Gmail di atas.</td></tr>';
     return;
@@ -327,7 +732,7 @@ function renderTable() {
 function openAdminModal() {
   if (isAdmin) return;
   document.getElementById('admin-modal').classList.add('open');
-  document.getElementById('modal-err').textContent='';
+  document.getElementById('modal-err').classList.remove('show');
   document.getElementById('admin-name-input').focus();
 }
 function closeAdminModal() {
@@ -338,17 +743,17 @@ function doLogin() {
   const gmail=document.getElementById('admin-gmail-input').value.trim().toLowerCase();
   const pass=document.getElementById('admin-pass-input').value;
   const errEl=document.getElementById('modal-err');
-  if (!name) { errEl.textContent='Nama admin tidak boleh kosong.'; return; }
-  if (!validGmail(gmail)) { errEl.textContent='Format Gmail admin tidak valid.'; return; }
-  if (pass !== SECRET_PASSWORD) { errEl.textContent='Password salah. Coba lagi.'; return; }
+  if (!name) { errEl.textContent='Nama admin tidak boleh kosong.'; errEl.classList.add('show'); return; }
+  if (!validGmail(gmail)) { errEl.textContent='Format Gmail admin tidak valid.'; errEl.classList.add('show'); return; }
+  if (pass!==SECRET_PASSWORD) { errEl.textContent='Password salah. Coba lagi.'; errEl.classList.add('show'); return; }
   isAdmin=true;
-  adminInfo={ name, gmail };
+  adminInfo={name,gmail};
   closeAdminModal();
   applyAdminUI();
 }
 function logout() {
   isAdmin=false;
-  adminInfo={ name:'', gmail:'' };
+  adminInfo={name:'',gmail:''};
   removeAdminUI();
 }
 
@@ -358,14 +763,14 @@ function applyAdminUI() {
   document.getElementById('badge-name').textContent=adminInfo.name;
   document.getElementById('badge-gmail').textContent=adminInfo.gmail;
   document.getElementById('badge-avatar').textContent=initials(adminInfo.name);
-  document.getElementById('edit-title-btn').style.display='inline-flex';
+  document.getElementById('edit-title-btn').style.display='inline-block';
   document.getElementById('header-sub').textContent='Mode Admin aktif — semua fitur tersedia';
   renderTable();
 }
 function removeAdminUI() {
   document.getElementById('admin-badge').style.display='none';
   document.getElementById('edit-title-btn').style.display='none';
-  if (editingTitle) { endEditTitle(false); }
+  if (editingTitle) endEditTitle(false);
   document.getElementById('header-sub').textContent='Kelola daftar Gmail dan result secara efisien';
   renderTable();
 }
@@ -377,34 +782,33 @@ function toggleEditTitle() {
 }
 function startEditTitle() {
   const el=document.getElementById('title-display');
-  el.contentEditable='true';
-  el.focus();
-  editingTitle=true;
-  document.getElementById('edit-title-btn').textContent='💾';
+  el.contentEditable='true'; el.focus(); editingTitle=true;
+  document.getElementById('edit-title-btn').textContent='💾 Simpan';
   const range=document.createRange(), sel=window.getSelection();
   range.selectNodeContents(el); sel.removeAllRanges(); sel.addRange(range);
 }
 function endEditTitle(save) {
   const el=document.getElementById('title-display');
-  el.contentEditable='false';
-  editingTitle=false;
-  document.getElementById('edit-title-btn').textContent='✏️';
-  if (!save || !el.textContent.trim()) el.textContent=el.dataset.prev||'Gmail Tracker';
-  else document.title=el.textContent.trim()+' — Admin';
+  el.contentEditable='false'; editingTitle=false;
+  document.getElementById('edit-title-btn').textContent='✏️ Edit';
+  if (!save||!el.textContent.trim()) el.textContent=el.dataset.prev||'Gmail Tracker';
+  else document.title=el.textContent.trim();
 }
-document.addEventListener('keydown', e=>{
-  if (e.key==='Escape') {
+document.addEventListener('keydown',e=>{
+  if (e.key==='Escape'){
     if (document.getElementById('admin-modal').classList.contains('open')) closeAdminModal();
     if (editingTitle) endEditTitle(false);
   }
-  if (e.key==='Enter' && editingTitle) { e.preventDefault(); endEditTitle(true); }
+  if (e.key==='Enter'&&editingTitle){e.preventDefault();endEditTitle(true);}
 });
-document.getElementById('title-display').addEventListener('focus', ()=>{
+document.getElementById('title-display').addEventListener('focus',()=>{
   document.getElementById('title-display').dataset.prev=document.getElementById('title-display').textContent;
 });
-document.getElementById('gmail-input').addEventListener('keydown',e=>{ if(e.key==='Enter') addEntry(); });
-document.getElementById('admin-modal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeAdminModal(); });
+document.getElementById('gmail-input').addEventListener('keydown',e=>{if(e.key==='Enter')addEntry();});
+document.getElementById('admin-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeAdminModal();});
 
+/* ── INIT ── */
+loadFromStorage();
 renderAll();
 </script>
 </body>

@@ -167,7 +167,33 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .ct-dot{width:5px;height:5px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple))}
 
 /* ── FORM ── */
-.form-row{display:grid;grid-template-columns:1fr 180px auto;gap:10px;align-items:end}
+.form-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}
+
+/* ── PAKET RESULT ── */
+.paket-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px}
+@media(max-width:600px){.paket-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:380px){.paket-grid{grid-template-columns:repeat(2,1fr)}}
+.paket-card{
+  background:var(--panel2);border:1.5px solid var(--border);
+  border-radius:11px;padding:10px 8px;text-align:center;cursor:pointer;
+  transition:all .18s ease;position:relative;user-select:none;
+}
+.paket-card:hover{border-color:var(--border2);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.paket-card.selected{border-color:var(--blue);background:rgba(79,124,255,.08);box-shadow:0 0 0 1px var(--blue),0 4px 16px rgba(79,124,255,.18)}
+.paket-card.best{border-color:var(--amber) !important}
+.paket-badge{position:absolute;top:-7px;left:50%;transform:translateX(-50%);background:var(--amber);color:#000;font-size:8.5px;font-weight:800;padding:1px 7px;border-radius:99px;white-space:nowrap}
+.paket-result{font-size:15px;font-weight:800;font-family:'Space Mono',monospace;color:var(--text);line-height:1}
+.paket-unit{font-size:9px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin:2px 0 4px}
+.paket-price{font-size:12px;font-weight:800;color:var(--green)}
+.paket-card.selected .paket-result{color:var(--blue)}
+.paket-card.selected .paket-price{color:var(--cyan)}
+
+/* Kalkulaor harga preview */
+.harga-preview{display:flex;align-items:center;justify-content:space-between;background:rgba(79,124,255,.07);border:1px solid var(--border2);border-radius:9px;padding:9px 14px;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+.hp-left{font-size:12px;color:var(--text2)}
+.hp-right{font-size:15px;font-weight:800;font-family:'Space Mono',monospace;color:var(--green)}
+.hp-saldo{font-size:11px;color:var(--muted)}
+.hp-saldo.warn{color:var(--red);font-weight:700}
 @media(max-width:520px){.form-row{grid-template-columns:1fr}}
 .fg{display:flex;flex-direction:column;gap:5px;position:relative}
 .fg label{font-size:10.5px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em}
@@ -655,7 +681,7 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-lbl">Total Gmail</div><div class="stat-val" id="stat-total">0</div></div>
         <div class="stat-card"><div class="stat-lbl">Total Result</div><div class="stat-val" id="stat-result">0</div></div>
-        <div class="stat-card"><div class="stat-lbl">Est. Selesai</div><div class="stat-val small" id="stat-time">—</div></div>
+        <div class="stat-card"><div class="stat-lbl">Total Pengeluaran</div><div class="stat-val small" id="stat-spent">Rp 0</div></div>
       </div>
       <!-- Saldo Real-time -->
       <div class="saldo-bar" id="saldo-bar">
@@ -669,18 +695,29 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
       
       <div class="card">
         <div class="card-head"><span class="card-title"><span class="ct-dot"></span>Tambah Gmail</span></div>
-        <div class="form-row" id="add-form-container">
-          <div class="fg" id="fg-email">
-            <label>Alamat Gmail</label>
-            <input type="email" id="gmail-input" placeholder="contoh@gmail.com" oninput="clearMsg()" disabled>
+        <div id="add-form-container">
+          <!-- Email row -->
+          <div class="form-row" style="margin-bottom:12px">
+            <div class="fg" id="fg-email">
+              <label>Alamat Gmail</label>
+              <input type="email" id="gmail-input" placeholder="contoh@gmail.com" oninput="clearMsg()" disabled>
+            </div>
+            <div class="fg">
+              <label style="visibility:hidden">‎</label>
+              <button class="btn btn-primary" onclick="addEntry()" id="btn-add-gmail" disabled>+ Tambah</button>
+            </div>
           </div>
-          <div class="fg" id="fg-result">
-            <label>Jumlah Result (100–1000)</label>
-            <input type="number" id="result-input" min="100" max="1000" step="100" value="100" disabled>
-          </div>
-          <div class="fg">
-            <label style="visibility:hidden">‎</label>
-            <button class="btn btn-primary" onclick="addEntry()" id="btn-add-gmail" disabled>+ Tambah</button>
+          <!-- Paket picker -->
+          <div id="fg-result">
+            <div style="font-size:10.5px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Pilih Paket Result</div>
+            <div class="paket-grid" id="paket-grid"></div>
+            <div class="harga-preview" id="harga-preview">
+              <div>
+                <div class="hp-left" id="hp-desc">Pilih paket di atas</div>
+                <div class="hp-saldo" id="hp-saldo-info">Saldo: Rp 0</div>
+              </div>
+              <div class="hp-right" id="hp-harga">—</div>
+            </div>
           </div>
         </div>
         <div class="alert alert-success" id="msg-ok"></div>
@@ -695,7 +732,7 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th style="width:40px">No.</th><th>Nama</th><th>Gmail</th><th>Result</th><th>Est.</th>
+              <th style="width:40px">No.</th><th>Nama</th><th>Gmail</th><th>Result</th><th>Harga</th><th>Est.</th>
               <th id="del-col-head" style="width:80px;display:none"></th>
             </tr></thead>
             <tbody id="tbody"></tbody>
@@ -1009,6 +1046,61 @@ function save(){try{localStorage.setItem(SK_ENTRIES,JSON.stringify(entries));loc
 function load(){try{const e=localStorage.getItem(SK_ENTRIES);if(e)entries=JSON.parse(e);const s=localStorage.getItem(SK_SETTINGS);if(s){const sv=JSON.parse(s);settings={...settings,...sv,qrImages:{...DEFAULT_QR_IMAGES,...(sv.qrImages||{})}};}const u=localStorage.getItem(SK_USER);if(u)userData={...userData,...JSON.parse(u)};const p=localStorage.getItem(SK_PENDING);if(p)pendingDeposits=JSON.parse(p);}catch(e){}}
 
 /* ══ HELPERS ══ */
+/* ── PAKET RESULT ── */
+const PRICE_PER_RESULT=20; // Rp 20/result
+const PAKETS=[
+  {result:100,  label:'100',  best:false},
+  {result:200,  label:'200',  best:false},
+  {result:300,  label:'300',  best:false},
+  {result:500,  label:'500',  best:false},
+  {result:700,  label:'700',  best:false},
+  {result:1000, label:'1.000',best:true},
+];
+function paketPrice(result){return result*PRICE_PER_RESULT}
+function formatRp(n){return'Rp '+n.toLocaleString('id-ID')}
+let selectedPaket=null;
+
+function renderPaketGrid(){
+  const grid=document.getElementById('paket-grid');
+  if(!grid)return;
+  const isLocked=!userData.hasPaid && !isAdmin;
+  grid.innerHTML=PAKETS.map(p=>{
+    const price=paketPrice(p.result);
+    const sel=selectedPaket===p.result;
+    return`<div class="paket-card ${sel?'selected':''} ${p.best?'best':''} ${isLocked?'locked-pkg':''}"
+      onclick="${isLocked?'':'selectPaket('+p.result+')'}" style="${isLocked?'opacity:.45;cursor:not-allowed':''}">
+      ${p.best?'<span class="paket-badge">🔥 Best</span>':''}
+      <div class="paket-result">${p.label}</div>
+      <div class="paket-unit">result</div>
+      <div class="paket-price">${formatRp(price)}</div>
+    </div>`;
+  }).join('');
+  updateHargaPreview();
+}
+
+function selectPaket(result){
+  selectedPaket=result;
+  renderPaketGrid();
+  updateHargaPreview();
+}
+
+function updateHargaPreview(){
+  const desc=document.getElementById('hp-desc');
+  const harga=document.getElementById('hp-harga');
+  const saldoInfo=document.getElementById('hp-saldo-info');
+  if(!desc)return;
+  const saldo=userData.saldo||0;
+  saldoInfo.textContent='Saldo: '+formatRp(saldo);
+  if(!selectedPaket){desc.textContent='Pilih paket di atas';harga.textContent='—';saldoInfo.className='hp-saldo';return;}
+  const price=paketPrice(selectedPaket);
+  desc.textContent=selectedPaket+' result → '+formatRp(price);
+  harga.textContent=formatRp(price);
+  const kurang=saldo<price;
+  saldoInfo.className='hp-saldo'+(kurang?' warn':'');
+  if(kurang)saldoInfo.textContent='⚠ Saldo kurang! Butuh +'+formatRp(price-saldo);
+  else saldoInfo.textContent='Saldo setelah: '+formatRp(saldo-price);
+}
+
 function firstName(email){const l=email.split('@')[0];const c=l.replace(/[._\-]+/g,' ').replace(/\d/g,'').trim();const f=c.split(' ')[0]||l;return f.charAt(0).toUpperCase()+f.slice(1).toLowerCase()}
 function initials(name){return name?name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase():'?'}
 function estTime(count){const s=Math.round(count*.8);if(s<60)return s+'d';const m=Math.floor(s/60),r=s%60;return r?m+'m '+r+'d':m+'m'}
@@ -1020,23 +1112,24 @@ function pad(n){return String(n).padStart(2,'0')}
 function updateLockState(){
   const isLocked=!userData.hasPaid && !isAdmin;
   const hint=document.getElementById('lock-hint');
-  const inputs=document.querySelectorAll('#gmail-input,#result-input');
   const btn=document.getElementById('btn-add-gmail');
   const fgEmail=document.getElementById('fg-email');
   const fgResult=document.getElementById('fg-result');
+  const gmailInput=document.getElementById('gmail-input');
   if(isLocked){
     fgEmail.classList.add('locked-field');
     fgResult.classList.add('locked-field');
     hint.style.display='block';
-    inputs.forEach(i=>i.disabled=true);
-    btn.disabled=true;
+    if(gmailInput)gmailInput.disabled=true;
+    if(btn)btn.disabled=true;
   }else{
     fgEmail.classList.remove('locked-field');
     fgResult.classList.remove('locked-field');
     hint.style.display='none';
-    inputs.forEach(i=>i.disabled=false);
-    btn.disabled=false;
+    if(gmailInput)gmailInput.disabled=false;
+    if(btn)btn.disabled=false;
   }
+  renderPaketGrid();
 }
 
 /* ══ PAGE NAV ══ */
@@ -1075,25 +1168,41 @@ function showOk(m){const el=document.getElementById('msg-ok');el.textContent='�
 function addEntry(){
   if(!userData.hasPaid && !isAdmin){showErr('Deposit dulu untuk membuka akses.');return;}
   const email=document.getElementById('gmail-input').value.trim().toLowerCase();
-  const count=parseInt(document.getElementById('result-input').value);
   if(!email){showErr('Alamat Gmail wajib diisi.');return}
   if(!validGmail(email)){showErr('Format Gmail tidak valid.');return}
-  if(isNaN(count)||count<100||count>1000){showErr('Result harus 100–1000.');return}
+  if(!selectedPaket){showErr('Pilih paket result terlebih dahulu.');return}
+  const price=paketPrice(selectedPaket);
+  if(!isAdmin){
+    if((userData.saldo||0)<price){showErr('Saldo tidak cukup! Deposit dulu. Butuh '+formatRp(price));return}
+  }
   if(entries.find(e=>e.email===email)){showErr('Gmail sudah ada.');return}
-  entries.push({email,count,id:Date.now()});save();
-  showOk('Gmail ditambahkan!');
-  document.getElementById('gmail-input').value='';document.getElementById('result-input').value='100';
+  // Kurangi saldo
+  if(!isAdmin){userData.saldo=(userData.saldo||0)-price;}
+  entries.push({email,count:selectedPaket,price,id:Date.now()});
+  save();updateSaldoDisplay(true);
+  showOk('Gmail ditambahkan! Saldo -'+formatRp(price));
+  document.getElementById('gmail-input').value='';
+  selectedPaket=null;
   renderAll();
 }
-function delEntry(id){if(!isAdmin)return;entries=entries.filter(e=>e.id!==id);save();renderAll()}
+function delEntry(id){
+  if(!isAdmin)return;
+  const e=entries.find(x=>x.id===id);
+  if(e&&confirm('Hapus entry ini? Saldo user akan dikembalikan '+formatRp(e.price||paketPrice(e.count)))){
+    userData.saldo=(userData.saldo||0)+(e.price||paketPrice(e.count));
+    entries=entries.filter(x=>x.id!==id);
+    save();updateSaldoDisplay(true);renderAll();
+    toast('🗑 Entry dihapus, saldo dikembalikan');
+  }
+}
 function renderAll(){renderTable();renderStats();updateNavBadge();updateLockState()}
-function renderStats(){const tot=entries.reduce((a,e)=>a+e.count,0);document.getElementById('stat-total').textContent=entries.length;document.getElementById('stat-result').textContent=tot.toLocaleString('id-ID');document.getElementById('stat-time').textContent=totalTime(Math.round(tot*.8));updateSaldoDisplay(false);}
+function renderStats(){const tot=entries.reduce((a,e)=>a+e.count,0);const totPrice=entries.reduce((a,e)=>a+(e.price||paketPrice(e.count)),0);document.getElementById('stat-total').textContent=entries.length;document.getElementById('stat-result').textContent=tot.toLocaleString('id-ID');document.getElementById('stat-time').textContent=totalTime(Math.round(tot*.8));const spEl=document.getElementById('stat-spent');if(spEl)spEl.textContent=formatRp(totPrice);updateSaldoDisplay(false);updateHargaPreview();}
 function updateNavBadge(){document.getElementById('nav-count-badge').textContent=entries.length}
 function renderTable(){
   document.getElementById('del-col-head').style.display=isAdmin?'table-cell':'none';
   const tbody=document.getElementById('tbody');
   if(!entries.length){tbody.innerHTML='<tr class="empty-row"><td colspan="6" style="text-align:center;padding:2.5rem;color:var(--muted)">📭 Belum ada data</td></tr>';return;}
-  tbody.innerHTML=entries.map((e,i)=>`<tr><td class="mono" style="color:var(--muted)">${pad(i+1)}</td><td><div class="name-cell"><div class="av">${renderAvatar(firstName(e.email))}</div><span style="font-weight:600">${firstName(e.email)}</span></div></td><td class="mono" style="color:var(--text2);font-size:11.5px">${e.email}</td><td><span class="chip">${e.count.toLocaleString('id-ID')}</span></td><td class="mono" style="color:var(--text2);font-size:11.5px">${estTime(e.count)}</td><td>${isAdmin?`<button class="btn btn-danger btn-sm" onclick="delEntry(${e.id})">🗑</button>`:''}</td></tr>`).join('');
+  tbody.innerHTML=entries.map((e,i)=>`<tr><td class="mono" style="color:var(--muted)">${pad(i+1)}</td><td><div class="name-cell"><div class="av">${renderAvatar(firstName(e.email))}</div><span style="font-weight:600">${firstName(e.email)}</span></div></td><td class="mono" style="color:var(--text2);font-size:11.5px">${e.email}</td><td><span class="chip">${e.count.toLocaleString('id-ID')}</span></td><td class="mono" style="color:var(--green);font-size:11.5px">${formatRp(e.price||paketPrice(e.count))}</td><td class="mono" style="color:var(--text2);font-size:11.5px">${estTime(e.count)}</td><td>${isAdmin?`<button class="btn btn-danger btn-sm" onclick="delEntry(${e.id})">🗑</button>`:''}</td></tr>`).join('');
 }
 function renderAvatar(name){if(userData.profileImage)return`<img src="${userData.profileImage}" alt="${name}">`;return`<span style="font-size:12px">${initials(name)}</span>`;}
 
@@ -1270,6 +1379,7 @@ function updateSaldoDisplay(animate){
   if(!el)return;
   el.textContent=formatRupiah(userData.saldo||0);
   if(animate){el.classList.add('updated');setTimeout(()=>el.classList.remove('updated'),600);}
+  updateHargaPreview();
 }
 
 /* ── DEPOSIT AMOUNT ── */

@@ -1,47 +1,62 @@
-// balance.js
+// balance.js - FIXED VERSION
 
-// 1. User data object with balance property initialized to 0
-const userData = {
-    balance: 0
-};
-
-// 2. Function to load balance from localStorage
-function loadBalance() {
-    const savedBalance = localStorage.getItem('userBalance');
-    if (savedBalance) {
-        userData.balance = parseFloat(savedBalance);
-    }
+// Function to set balance in localStorage
+function setBalance(balance) {
+    localStorage.setItem('userBalance', JSON.stringify(balance));
+    console.log('Balance saved:', balance);
 }
 
-// 3. Function to save balance to localStorage
-function saveBalance() {
-    localStorage.setItem('userBalance', userData.balance);
+// Function to get balance from localStorage
+function getBalance() {
+    const balance = JSON.parse(localStorage.getItem('userBalance')) || 0;
+    console.log('Balance loaded:', balance);
+    return balance;
 }
 
-// 4. Function to deduct balance after successful payment proof submission
-function submitPaymentProof(amount) {
-    if(userData.balance >= amount) {
-        userData.balance -= amount;
-        saveBalance();
-        return true; // Payment successful
-    } else {
-        console.warn('Insufficient balance!');
-        return false; // Payment failed
-    }
-}
-
-// 5. Functions to display current balance on account and tracker page
-function displayBalance() {
-    const balanceElement = document.getElementById('balanceDisplay');
+// Function to update display
+function updateDisplay() {
+    const balanceElement = document.getElementById('balance');
     if (balanceElement) {
-        balanceElement.innerText = `Current Balance: $${userData.balance}`;
+        balanceElement.textContent = `Balance: $${getBalance()}`;
     }
 }
 
-// 6. Validation to prevent negative balance
-function validateBalance(amount) {
-    return userData.balance + amount >= 0;
+// Function to handle purchase
+function handlePurchase(amount) {
+    const currentBalance = getBalance();
+    if (currentBalance >= amount) {
+        setBalance(currentBalance - amount);
+        updateDisplay();
+        alert('Purchase successful! Saldo berkurang.');
+        return true;
+    } else {
+        alert('Saldo tidak cukup untuk membeli item ini!');
+        return false;
+    }
 }
 
-// Load balance on page load
-window.onload = loadBalance;
+// Function to add balance
+function addBalance(amount) {
+    const currentBalance = getBalance();
+    setBalance(currentBalance + amount);
+    updateDisplay();
+    alert('Saldo berhasil ditambahkan!');
+}
+
+// Load balance on page load with multiple fallbacks
+function initBalance() {
+    updateDisplay();
+}
+
+// DOMContentLoaded - paling reliable
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBalance);
+} else {
+    initBalance();
+}
+
+// Backup: window.load
+window.addEventListener('load', initBalance);
+
+// Backup: Focus kembali ke window
+window.addEventListener('focus', updateDisplay);

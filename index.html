@@ -1042,7 +1042,25 @@ let pendingDeposits=[];
 let editingName=false, tempProfileImage=null;
 
 /* ══ PERSISTENCE ══ */
-function save(){try{localStorage.setItem(SK_ENTRIES,JSON.stringify(entries));localStorage.setItem(SK_SETTINGS,JSON.stringify(settings));localStorage.setItem(SK_USER,JSON.stringify(userData));localStorage.setItem(SK_PENDING,JSON.stringify(pendingDeposits));}catch(e){}}
+function saveUser(){
+  // Simpan userData TERPISAH — kecil, tidak pernah gagal
+  try{localStorage.setItem(SK_USER,JSON.stringify(userData));}
+  catch(e){console.error('saveUser gagal:',e);}
+}
+function save(){
+  try{
+    localStorage.setItem(SK_ENTRIES,JSON.stringify(entries));
+    localStorage.setItem(SK_PENDING,JSON.stringify(pendingDeposits));
+    saveUser(); // userData selalu disimpan terpisah
+    // Settings (berisi QR besar) disimpan terakhir
+    try{localStorage.setItem(SK_SETTINGS,JSON.stringify(settings));}
+    catch(qe){
+      // QR terlalu besar — simpan settings tanpa QR images
+      const slim={...settings,qrImages:{}};
+      localStorage.setItem(SK_SETTINGS,JSON.stringify(slim));
+    }
+  }catch(e){console.error('save gagal:',e);}
+}
 function load(){try{const e=localStorage.getItem(SK_ENTRIES);if(e)entries=JSON.parse(e);const s=localStorage.getItem(SK_SETTINGS);if(s){const sv=JSON.parse(s);settings={...settings,...sv,qrImages:{...DEFAULT_QR_IMAGES,...(sv.qrImages||{})}};}const u=localStorage.getItem(SK_USER);if(u)userData={...userData,...JSON.parse(u)};const p=localStorage.getItem(SK_PENDING);if(p)pendingDeposits=JSON.parse(p);}catch(e){}}
 
 /* ══ HELPERS ══ */
@@ -1117,15 +1135,15 @@ function updateLockState(){
   const fgResult=document.getElementById('fg-result');
   const gmailInput=document.getElementById('gmail-input');
   if(isLocked){
-    fgEmail.classList.add('locked-field');
-    fgResult.classList.add('locked-field');
-    hint.style.display='block';
+    if(fgEmail)fgEmail.classList.add('locked-field');
+    if(fgResult)fgResult.classList.add('locked-field');
+    if(hint)hint.style.display='block';
     if(gmailInput)gmailInput.disabled=true;
     if(btn)btn.disabled=true;
   }else{
-    fgEmail.classList.remove('locked-field');
-    fgResult.classList.remove('locked-field');
-    hint.style.display='none';
+    if(fgEmail)fgEmail.classList.remove('locked-field');
+    if(fgResult)fgResult.classList.remove('locked-field');
+    if(hint)hint.style.display='none';
     if(gmailInput)gmailInput.disabled=false;
     if(btn)btn.disabled=false;
   }
@@ -1171,16 +1189,37 @@ function addEntry(){
   if(!email){showErr('Alamat Gmail wajib diisi.');return}
   if(!validGmail(email)){showErr('Format Gmail tidak valid.');return}
   if(!selectedPaket){showErr('Pilih paket result terlebih dahulu.');return}
-  const price=paketPrice(selectedPaket);
+  const price=Number(paketPrice(selectedPaket));
+  const currentSaldo=Number(userData.saldo)||0;
+
+  // Validasi saldo — WAJIB untuk non-admin
   if(!isAdmin){
-    if((userData.saldo||0)<price){showErr('Saldo tidak cukup! Deposit dulu. Butuh '+formatRp(price));return}
+    if(currentSaldo<price){
+      showErr('Saldo tidak cukup! Butuh '+formatRp(price)+', saldo kamu '+formatRp(currentSaldo));
+      return;
+    }
   }
   if(entries.find(e=>e.email===email)){showErr('Gmail sudah ada.');return}
-  // Kurangi saldo
-  if(!isAdmin){userData.saldo=(userData.saldo||0)-price;}
+
+  // ── DEDUCT SALDO ── wajib terjadi sebelum apapun
+  if(!isAdmin){
+    userData.saldo=currentSaldo-price;
+    saveUser(); // Simpan saldo SEGERA, terpisah dari data besar
+  }
+
   entries.push({email,count:selectedPaket,price,id:Date.now()});
-  save();updateSaldoDisplay(true);
-  showOk('Gmail ditambahkan! Saldo -'+formatRp(price));
+  save();
+
+  // Update tampilan saldo dengan nilai yang sudah pasti benar
+  const saldoEl=document.getElementById('saldo-display');
+  if(saldoEl){
+    saldoEl.textContent=formatRupiah(userData.saldo);
+    saldoEl.classList.add('updated');
+    setTimeout(()=>saldoEl.classList.remove('updated'),600);
+  }
+
+  const msg=isAdmin?'Gmail ditambahkan!':'Gmail ditambahkan! Saldo berkurang '+formatRp(price)+' → sisa '+formatRp(userData.saldo);
+  showOk(msg);
   document.getElementById('gmail-input').value='';
   selectedPaket=null;
   renderAll();
@@ -1189,7 +1228,8 @@ function delEntry(id){
   if(!isAdmin)return;
   const e=entries.find(x=>x.id===id);
   if(e&&confirm('Hapus entry ini? Saldo user akan dikembalikan '+formatRp(e.price||paketPrice(e.count)))){
-    userData.saldo=(userData.saldo||0)+(e.price||paketPrice(e.count));
+    userData.saldo=Number(userData.saldo||0)+Number(e.price||paketPrice(e.count));
+    saveUser(); // Simpan saldo refund segera
     entries=entries.filter(x=>x.id!==id);
     save();updateSaldoDisplay(true);renderAll();
     toast('🗑 Entry dihapus, saldo dikembalikan');
@@ -1281,8 +1321,8 @@ function confirmPaymentComplete(){
   // Dipanggil oleh admin approve — bukan user
   const amt=getDepositAmountValue();
   userData.hasPaid=true;
-  userData.saldo=(userData.saldo||0)+amt;
-  save();updateSaldoDisplay(true);updateLockState();resetPay();
+  userData.saldo=Number(userData.saldo||0)+Number(amt);
+  saveUser();save();updateSaldoDisplay(true);updateLockState();resetPay();
   toast('✓ Akses dibuka! Saldo +'+formatRupiah(amt));goPage('tracker');
 }
 
@@ -1344,8 +1384,10 @@ function approveDeposit(id){
   if(!dep)return;
   dep.status='approved';
   userData.hasPaid=true;
-  userData.saldo=(userData.saldo||0)+(dep.amountNum||0);
-  save();updateSaldoDisplay(true);updateLockState();updatePendingBadge();
+  userData.saldo=Number(userData.saldo||0)+Number(dep.amountNum||0);
+  saveUser(); // Simpan saldo segera
+  save();
+  updateSaldoDisplay(true);updateLockState();updatePendingBadge();
   renderKonfirmasiPage();
   toast('✅ Deposit disetujui! Saldo +'+dep.amount);
 }
@@ -1377,7 +1419,8 @@ function formatRupiah(n){return'Rp '+n.toLocaleString('id-ID')}
 function updateSaldoDisplay(animate){
   const el=document.getElementById('saldo-display');
   if(!el)return;
-  el.textContent=formatRupiah(userData.saldo||0);
+  const val=Number(userData.saldo)||0;
+  el.textContent=formatRupiah(val);
   if(animate){el.classList.add('updated');setTimeout(()=>el.classList.remove('updated'),600);}
   updateHargaPreview();
 }

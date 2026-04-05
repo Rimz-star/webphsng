@@ -1063,25 +1063,27 @@ async function saveToFirestore() {
   }
 }
 
-// 🔴 BARU: Async save saldo ke Firestore LANGSUNG (Firebase-first)
+// ✅ FIX: Async save saldo ke Firestore — selalu return true (localStorage-first)
 async function saveSaldoToFirestoreSync(newSaldo) {
+  // ✅ FIX: Selalu simpan ke localStorage dulu (tidak pernah gagal)
+  userData.saldo = newSaldo;
+  saveUser(); // Simpan ke localStorage SEGERA sebagai fallback
+  
   if (!db || !deviceId) {
-    console.warn('⚠️ Firestore not ready, using localStorage only');
-    return false;
+    console.warn('⚠️ Firestore not ready, saldo tersimpan di localStorage');
+    return true; // ✅ Return true — localStorage sudah tersimpan
   }
   try {
-    userData.saldo = newSaldo;
-    // Save saldo LANGSUNG ke Firestore (tidak menunggu entries)
+    window._lastSaveTs = Date.now();
     await db.collection('gmt_data').doc(deviceId).set({
       userData: {...userData, profileImage: null},
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, {merge: true});
-    
     console.log('🔥 SALDO SAVED TO FIREBASE: '+newSaldo);
     return true;
   } catch(e) {
-    console.error('❌ saveSaldoToFirebaseSync gagal:', e);
-    return false;
+    console.error('❌ saveSaldoToFirebaseSync gagal (saldo sudah di localStorage):', e);
+    return true; // ✅ Return true — localStorage sudah tersimpan, Firebase bisa retry nanti
   }
 }
 
@@ -1363,39 +1365,35 @@ function addEntry(){
   }
   if(entries.find(e=>e.email===email)){showErr('Gmail sudah ada.');return}
 
-  // ── 🔥 FIREBASE-FIRST: DEDUCT SALDO + SAVE LANGSUNG KE FIREBASE ──
+  // ── ✅ FIX: LOCALSTORAGE-FIRST — Saldo SELALU berkurang, Firebase sync menyusul ──
   if(!isAdmin){
     const newSaldo = Math.max(0, currentSaldo - price);
-    console.log('💰 Saldo berkurang: '+formatRp(currentSaldo)+' → '+formatRp(newSaldo)+' (harga: '+formatRp(price)+')');
+    console.log('💰 Deduct saldo: '+formatRp(currentSaldo)+' → '+formatRp(newSaldo)+' (harga: '+formatRp(price)+')');
     
-    // 🔴 ASYNC: Tunggu Firebase save selesai sebelum UI update
-    saveSaldoToFirestoreSync(newSaldo).then(success => {
-      if(!success) {
-        showErr('❌ Gagal simpan saldo ke Firebase! Coba lagi.');
-        return;
-      }
-      
-      console.log('✅ SALDO BERHASIL TERSIMPAN DI FIREBASE');
-      userData.saldo = newSaldo;
-      
-      // Baru tambah entry SETELAH saldo berhasil disimpan ke Firebase
-      entries.push({email,count:selectedPaket,price,id:Date.now()});
-      save();  // Save entries juga
-      
-      // Update display
-      updateSaldoDisplay(true);
-      updateHargaPreview();
-      
-      const msg = 'Gmail ditambahkan! Saldo berkurang '+formatRp(price)+' → sisa '+formatRp(userData.saldo);
-      showOk(msg);
-      console.log('✓ SUCCESS: '+msg);
-      document.getElementById('gmail-input').value='';
-      selectedPaket=null;
-      renderAll();
-    }).catch(err => {
-      console.error('❌ Error saat Firebase save:', err);
-      showErr('❌ Gagal menyimpan saldo. Cek koneksi internet!');
-    });
+    // ✅ STEP 1: Deduct saldo SEGERA ke localStorage (tidak pernah gagal)
+    userData.saldo = newSaldo;
+    saveUser(); // Simpan ke localStorage sekarang juga
+    
+    // ✅ STEP 2: Tambah entry
+    entries.push({email,count:selectedPaket,price,id:Date.now()});
+    save(); // Save semua data
+    
+    // ✅ STEP 3: Update UI segera
+    updateSaldoDisplay(true);
+    updateHargaPreview();
+    const msg = 'Gmail ditambahkan! Saldo berkurang '+formatRp(price)+' → sisa '+formatRp(userData.saldo);
+    showOk(msg);
+    console.log('✓ SUCCESS: '+msg);
+    document.getElementById('gmail-input').value='';
+    selectedPaket=null;
+    renderAll();
+    
+    // ✅ STEP 4: Sync ke Firebase async (fire-and-forget, tidak block UI)
+    if(db && deviceId){
+      saveSaldoToFirestoreSync(newSaldo).catch(err => {
+        console.warn('⚠️ Firebase sync failed, saldo aman di localStorage:', err);
+      });
+    }
   } else {
     // Admin: langsung tambah entry tanpa deduct
     entries.push({email,count:selectedPaket,price,id:Date.now()});

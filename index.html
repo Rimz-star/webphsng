@@ -1127,22 +1127,30 @@ let editingName=false, tempProfileImage=null;
 /* ══ PERSISTENCE ══ */
 function saveUser(){
   // Simpan userData TERPISAH — kecil, tidak pernah gagal
-  try{localStorage.setItem(SK_USER,JSON.stringify(userData));}
-  catch(e){console.error('saveUser gagal:',e);}
+  try{
+    const userDataStr = JSON.stringify(userData);
+    localStorage.setItem(SK_USER, userDataStr);
+    console.log('💾 saveUser ke localStorage: saldo = '+userData.saldo);
+  }
+  catch(e){console.error('❌ saveUser localStorage gagal:',e);}
+  
   // 🔥 Langsung sync userData ke Firestore (merge, bukan overwrite)
   window._lastSaveTs = Date.now();
   if(db && deviceId){
     db.collection('gmt_data').doc(deviceId).set(
       {userData:{...userData,profileImage:null}, updatedAt:firebase.firestore.FieldValue.serverTimestamp()},
       {merge:true}
-    ).catch(e=>console.error('saveUser Firestore gagal:',e));
+    ).then(()=>{
+      console.log('☁️ saveUser ke Firestore: saldo = '+userData.saldo);
+    }).catch(e=>console.error('❌ saveUser Firestore gagal:',e));
   }
 }
 function save(){
   try{
     localStorage.setItem(SK_ENTRIES,JSON.stringify(entries));
     localStorage.setItem(SK_PENDING,JSON.stringify(pendingDeposits));
-    saveUser(); // userData selalu disimpan terpisah
+    console.log('💾 save: entries & pending deposits disimpan');
+    saveUser(); // userData selalu disimpan terpisah - 🔴 PENTING!
     // Settings (berisi QR besar) disimpan terakhir
     try{localStorage.setItem(SK_SETTINGS,JSON.stringify(settings));}
     catch(qe){
@@ -1150,7 +1158,7 @@ function save(){
       const slim={...settings,qrImages:{}};
       localStorage.setItem(SK_SETTINGS,JSON.stringify(slim));
     }
-  }catch(e){console.error('save gagal:',e);}
+  }catch(e){console.error('❌ save gagal:',e);}
   // 🔥 Sync ke Firestore (async fire-and-forget)
   window._lastSaveTs = Date.now();
   saveToFirestore();
@@ -1295,16 +1303,20 @@ function addEntry(){
   }
   if(entries.find(e=>e.email===email)){showErr('Gmail sudah ada.');return}
 
-  // ── DEDUCT SALDO ── wajib terjadi sebelum apapun
+  // ── DEDUCT SALDO ── 🔴 WAJIB TERJADI SEBELUM APAPUN
   if(!isAdmin){
-    userData.saldo = Math.max(0, currentSaldo - price); // Tidak bisa minus
-    saveUser(); // ✅ Simpan saldo ke localStorage DAN Firestore segera
+    const newSaldo = Math.max(0, currentSaldo - price);
+    userData.saldo = newSaldo;
+    console.log('💰 Saldo berkurang: '+formatRp(currentSaldo)+' → '+formatRp(newSaldo)+' (harga: '+formatRp(price)+')');
+    // 🔴 SIMPAN SALDO TERLEBIH DAHULU (paling penting!)
+    saveUser();
   }
 
+  // Tambah entry ke list
   entries.push({email,count:selectedPaket,price,id:Date.now()});
   save();
 
-  // ✅ Update semua tampilan saldo — pastikan angka terbaru tampil
+  // ✅ UPDATE DISPLAY - PASTIKAN LANGSUNG TAMPIL
   updateSaldoDisplay(true);
   updateHargaPreview();
 
@@ -1326,7 +1338,18 @@ function delEntry(id){
   }
 }
 function renderAll(){renderTable();renderStats();updateNavBadge();updateLockState()}
-function renderStats(){const tot=entries.reduce((a,e)=>a+e.count,0);const totPrice=entries.reduce((a,e)=>a+(e.price||paketPrice(e.count)),0);document.getElementById('stat-total').textContent=entries.length;document.getElementById('stat-result').textContent=tot.toLocaleString('id-ID');document.getElementById('stat-time').textContent=totalTime(Math.round(tot*.8));const spEl=document.getElementById('stat-spent');if(spEl)spEl.textContent=formatRp(totPrice);updateSaldoDisplay(false);updateHargaPreview();}
+function renderStats(){
+  const tot=entries.reduce((a,e)=>a+e.count,0);
+  const totPrice=entries.reduce((a,e)=>a+(e.price||paketPrice(e.count)),0);
+  document.getElementById('stat-total').textContent=entries.length;
+  document.getElementById('stat-result').textContent=tot.toLocaleString('id-ID');
+  document.getElementById('stat-time').textContent=totalTime(Math.round(tot*.8));
+  const spEl=document.getElementById('stat-spent');
+  if(spEl)spEl.textContent=formatRp(totPrice);
+  // 🔴 PENTING: Update saldo display (tanpa animate agar lancar)
+  updateSaldoDisplay(false);
+  updateHargaPreview();
+}
 function updateNavBadge(){document.getElementById('nav-count-badge').textContent=entries.length}
 function renderTable(){
   document.getElementById('del-col-head').style.display=isAdmin?'table-cell':'none';
@@ -1505,13 +1528,21 @@ function openLightbox(id){
 function closeLightbox(){document.getElementById('proof-lightbox').classList.remove('show');}
 
 /* ── SALDO ── */
-function formatRupiah(n){return'Rp '+n.toLocaleString('id-ID')}
+function formatRupiah(n){
+  const num = Number(n)||0;
+  return'Rp '+num.toLocaleString('id-ID');
+}
 function updateSaldoDisplay(animate){
   const el=document.getElementById('saldo-display');
-  if(!el)return;
+  if(!el){console.warn('⚠️ saldo-display element tidak ditemukan!');return;}
   const val=Number(userData.saldo)||0;
-  el.textContent=formatRupiah(val);
-  if(animate){el.classList.add('updated');setTimeout(()=>el.classList.remove('updated'),600);}
+  const formatted = formatRupiah(val);
+  el.textContent=formatted;
+  console.log('🎯 updateSaldoDisplay: '+formatted);
+  if(animate){
+    el.classList.add('updated');
+    setTimeout(()=>el.classList.remove('updated'),600);
+  }
   updateHargaPreview();
 }
 

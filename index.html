@@ -1042,7 +1042,7 @@ if (!deviceId) {
   localStorage.setItem('gmt_device_id', deviceId);
 }
 
-/* ── Firestore helpers ── */
+/* ── Firebase-FIRST helpers (Firestore as source of truth) ── */
 async function saveToFirestore() {
   if (!db || !deviceId) return;
   try {
@@ -1056,7 +1056,33 @@ async function saveToFirestore() {
       settings: safeSettings,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-  } catch(e) { console.error('🔥 Firestore save gagal:', e); }
+    console.log('✅ saveToFirestore SUCCESS - saldo: '+userData.saldo);
+  } catch(e) { 
+    console.error('❌ Firestore save gagal:', e); 
+    throw e;  // 🔴 Penting: Throw error agar caller tahu
+  }
+}
+
+// 🔴 BARU: Async save saldo ke Firestore LANGSUNG (Firebase-first)
+async function saveSaldoToFirestoreSync(newSaldo) {
+  if (!db || !deviceId) {
+    console.warn('⚠️ Firestore not ready, using localStorage only');
+    return false;
+  }
+  try {
+    userData.saldo = newSaldo;
+    // Save saldo LANGSUNG ke Firestore (tidak menunggu entries)
+    await db.collection('gmt_data').doc(deviceId).set({
+      userData: {...userData, profileImage: null},
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, {merge: true});
+    
+    console.log('🔥 SALDO SAVED TO FIREBASE: '+newSaldo);
+    return true;
+  } catch(e) {
+    console.error('❌ saveSaldoToFirebaseSync gagal:', e);
+    return false;
+  }
 }
 
 async function loadFromFirestore() {
@@ -1067,33 +1093,62 @@ async function loadFromFirestore() {
       const d = snap.data();
       if (d.entries)          entries         = d.entries;
       if (d.pendingDeposits)  pendingDeposits = d.pendingDeposits;
-      if (d.userData)         userData        = {...userData, ...d.userData};
+      if (d.userData) {
+        userData = {...userData, ...d.userData};
+        console.log('☁️ loadFromFirestore: userData.saldo = '+userData.saldo);
+      }
       if (d.settings)         settings        = {...settings, ...d.settings,
                                qrImages:{...DEFAULT_QR_IMAGES,...(d.settings.qrImages||{})}};
       return true;
     }
     return false;
-  } catch(e) { console.error('🔥 Firestore load gagal:', e); return false; }
+  } catch(e) { console.error('❌ Firestore load gagal:', e); return false; }
 }
 
 /* ── Real-time listener — auto refresh saat admin ubah data ── */
+let realtimeDataListener = null;
 function startRealtimeSync() {
   if (!db || !deviceId) return;
-  db.collection('gmt_data').doc(deviceId)
+  
+  console.log('🔥 Starting realtime sync for device: '+deviceId);
+  
+  // Unsubscribe dari listener lama
+  if(realtimeDataListener) {
+    realtimeDataListener();
+  }
+  
+  realtimeDataListener = db.collection('gmt_data').doc(deviceId)
     .onSnapshot(snap => {
-      if (!snap.exists) return;
+      if (!snap.exists) {
+        console.warn('⚠️ Device data tidak ada di Firestore');
+        return;
+      }
       const d = snap.data();
       const serverTime = d.updatedAt ? d.updatedAt.toMillis() : 0;
       // Guard 30 detik: abaikan snapshot jika baru saja kita yang save
       if (serverTime > (window._lastSaveTs || 0) + 30000) {
+        console.log('🔥 Realtime update dari Firestore');
         if (d.entries)         entries         = d.entries;
         if (d.pendingDeposits) pendingDeposits = d.pendingDeposits;
-        if (d.userData)        userData        = {...userData, ...d.userData};
+        if (d.userData) {
+          const oldSaldo = userData.saldo;
+          userData = {...userData, ...d.userData};
+          
+          // 🔥 CHECK: Admin approve deposit? Show notification!
+          if(userData.hasPaid && !isAdmin && userData.saldo > oldSaldo) {
+            const saldoBaru = userData.saldo;
+            const saldobertambah = saldoBaru - oldSaldo;
+            toast('✅ SELAMAT! Deposit Anda telah disetujui! Saldo +'+formatRp(saldobertambah));
+            console.log('✅ Deposit approved! Saldo: '+formatRp(oldSaldo)+' → '+formatRp(saldoBaru));
+          }
+        }
         if (d.settings)        settings        = {...settings, ...d.settings,
                                  qrImages:{...DEFAULT_QR_IMAGES,...(d.settings.qrImages||{})}};
         renderAll(); updateUserPill(); renderDepositGrid(); updateLockState();
         updateSaldoDisplay(false); updatePendingBadge();
-        toast('☁ Data diperbarui dari cloud');
+        if(serverTime > (window._lastSaveTs || 0)) {
+          toast('☁ Data diperbarui dari cloud');
+        }
       }
     }, e => console.error('🔥 Realtime sync error:', e));
 }
@@ -1265,7 +1320,12 @@ function goPage(name){
   if(name==='deposit')renderDepositGrid();
   if(name==='admin'){fillAdminInputs();renderMsGrid();}
   if(name==='account')renderAccountPage();
-  if(name==='konfirmasi'){if(!isAdmin){goPage('tracker');return;}renderKonfirmasiPage();}
+  if(name==='konfirmasi'){
+    if(!isAdmin){goPage('tracker');return;}
+    // 🔥 Start realtime listener untuk deposits
+    startRealtimeDepositListener();
+    renderKonfirmasiPage();
+  }
 }
 
 /* ══ MOBILE NAV ══ */
@@ -1303,28 +1363,50 @@ function addEntry(){
   }
   if(entries.find(e=>e.email===email)){showErr('Gmail sudah ada.');return}
 
-  // ── DEDUCT SALDO ── 🔴 WAJIB TERJADI SEBELUM APAPUN
+  // ── 🔥 FIREBASE-FIRST: DEDUCT SALDO + SAVE LANGSUNG KE FIREBASE ──
   if(!isAdmin){
     const newSaldo = Math.max(0, currentSaldo - price);
-    userData.saldo = newSaldo;
     console.log('💰 Saldo berkurang: '+formatRp(currentSaldo)+' → '+formatRp(newSaldo)+' (harga: '+formatRp(price)+')');
-    // 🔴 SIMPAN SALDO TERLEBIH DAHULU (paling penting!)
-    saveUser();
+    
+    // 🔴 ASYNC: Tunggu Firebase save selesai sebelum UI update
+    saveSaldoToFirestoreSync(newSaldo).then(success => {
+      if(!success) {
+        showErr('❌ Gagal simpan saldo ke Firebase! Coba lagi.');
+        return;
+      }
+      
+      console.log('✅ SALDO BERHASIL TERSIMPAN DI FIREBASE');
+      userData.saldo = newSaldo;
+      
+      // Baru tambah entry SETELAH saldo berhasil disimpan ke Firebase
+      entries.push({email,count:selectedPaket,price,id:Date.now()});
+      save();  // Save entries juga
+      
+      // Update display
+      updateSaldoDisplay(true);
+      updateHargaPreview();
+      
+      const msg = 'Gmail ditambahkan! Saldo berkurang '+formatRp(price)+' → sisa '+formatRp(userData.saldo);
+      showOk(msg);
+      console.log('✓ SUCCESS: '+msg);
+      document.getElementById('gmail-input').value='';
+      selectedPaket=null;
+      renderAll();
+    }).catch(err => {
+      console.error('❌ Error saat Firebase save:', err);
+      showErr('❌ Gagal menyimpan saldo. Cek koneksi internet!');
+    });
+  } else {
+    // Admin: langsung tambah entry tanpa deduct
+    entries.push({email,count:selectedPaket,price,id:Date.now()});
+    save();
+    updateSaldoDisplay(true);
+    updateHargaPreview();
+    showOk('Gmail ditambahkan!');
+    document.getElementById('gmail-input').value='';
+    selectedPaket=null;
+    renderAll();
   }
-
-  // Tambah entry ke list
-  entries.push({email,count:selectedPaket,price,id:Date.now()});
-  save();
-
-  // ✅ UPDATE DISPLAY - PASTIKAN LANGSUNG TAMPIL
-  updateSaldoDisplay(true);
-  updateHargaPreview();
-
-  const msg=isAdmin?'Gmail ditambahkan!':'Gmail ditambahkan! Saldo berkurang '+formatRp(price)+' → sisa '+formatRp(userData.saldo);
-  showOk(msg);
-  document.getElementById('gmail-input').value='';
-  selectedPaket=null;
-  renderAll();
 }
 function delEntry(id){
   if(!isAdmin)return;
@@ -1495,12 +1577,42 @@ function depReqCard(d){
 function approveDeposit(id){
   const dep=pendingDeposits.find(d=>d.id===id);
   if(!dep)return;
+  
   dep.status='approved';
   userData.hasPaid=true;
   userData.saldo=Number(userData.saldo||0)+Number(dep.amountNum||0);
-  saveUser(); // Simpan saldo segera
+  
+  console.log('✅ Approving deposit '+id+': +'+dep.amount);
+  
+  // Save to localStorage
+  saveUser();
   save();
-  updateSaldoDisplay(true);updateLockState();updatePendingBadge();
+  
+  // 🔥 REALTIME: Update ke Firestore langsung
+  if(db) {
+    db.collection('gmt_deposits').doc(id).update({
+      status: 'approved',
+      approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      approvedBy: adminInfo.name
+    }).then(() => {
+      console.log('🔥 Deposit approved di Firestore: '+id);
+      
+      // Also update user's saldo di Firestore
+      const targetDeviceId = dep.deviceId;
+      if(targetDeviceId) {
+        db.collection('gmt_data').doc(targetDeviceId).update({
+          'userData.saldo': userData.saldo,
+          'userData.hasPaid': true
+        }).then(() => {
+          console.log('🔥 User saldo updated di Firestore: '+userData.saldo);
+        }).catch(err => console.error('❌ Update saldo error:', err));
+      }
+    }).catch(err => console.error('❌ Approve deposit error:', err));
+  }
+  
+  updateSaldoDisplay(true);
+  updateLockState();
+  updatePendingBadge();
   renderKonfirmasiPage();
   toast('✅ Deposit disetujui! Saldo +'+dep.amount);
 }
@@ -1509,8 +1621,74 @@ function rejectDeposit(id){
   const dep=pendingDeposits.find(d=>d.id===id);
   if(!dep)return;
   dep.status='rejected';
-  save();updatePendingBadge();renderKonfirmasiPage();
+  
+  console.log('❌ Rejecting deposit '+id);
+  
+  save();
+  
+  // 🔥 REALTIME: Update ke Firestore langsung
+  if(db) {
+    db.collection('gmt_deposits').doc(id).update({
+      status: 'rejected',
+      rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      rejectedBy: adminInfo.name
+    }).then(() => {
+      console.log('🔥 Deposit rejected di Firestore: '+id);
+    }).catch(err => console.error('❌ Reject deposit error:', err));
+  }
+  
+  updatePendingBadge();
+  renderKonfirmasiPage();
   toast('✕ Deposit ditolak');
+}
+
+// 🔥 REALTIME LISTENER: Load pending deposits dari Firestore
+let realtimeDepositListener = null;
+function startRealtimeDepositListener() {
+  if(!db || !isAdmin) return;
+  
+  console.log('🔥 Starting realtime deposit listener...');
+  
+  // Unsubscribe dari listener lama jika ada
+  if(realtimeDepositListener) {
+    realtimeDepositListener();
+  }
+  
+  // Subscribe ke collection gmt_deposits
+  realtimeDepositListener = db.collection('gmt_deposits')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snapshot => {
+      console.log('🔥 Realtime deposit update: '+snapshot.docs.length+' deposits');
+      
+      pendingDeposits = [];
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        // Convert Firestore timestamp to readable format
+        const createdAt = data.createdAt ? data.createdAt.toDate() : new Date();
+        pendingDeposits.push({
+          ...data,
+          id: doc.id,
+          timestamp: createdAt.toLocaleString('id-ID')
+        });
+      });
+      
+      // Update tampilan jika di konfirmasi page
+      if(activePage === 'konfirmasi') {
+        console.log('✅ Updating konfirmasi page dengan data terbaru');
+        renderKonfirmasiPage();
+        updatePendingBadge();
+      }
+    }, err => {
+      console.error('❌ Realtime deposit listener error:', err);
+    });
+}
+
+function stopRealtimeDepositListener() {
+  if(realtimeDepositListener) {
+    realtimeDepositListener();
+    realtimeDepositListener = null;
+    console.log('⏸️ Stopped realtime deposit listener');
+  }
 }
 
 function deletePendingDeposit(id){
@@ -1586,7 +1764,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/')){const dt=new DataTransfer();dt.items.add(f);document.getElementById('proof-file').files=dt.files;handleFile({target:{files:[f]}});}});
 });
 
-/* ══ SEND PROOF ══ */
+/* ══ SEND PROOF (Realtime to Firestore) ══ */
 async function sendProof(){
   const sn=document.getElementById('sender-name').value.trim();
   const pa=document.getElementById('paid-amount').value.trim();
@@ -1609,18 +1787,33 @@ async function sendProof(){
       proofImage:proofBase64,
       timestamp:new Date().toLocaleString('id-ID'),
       status:'pending',
-      userName:userData.displayName
+      userName:userData.displayName,
+      deviceId: deviceId,  // 🔴 Track which device sent this
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
+    
+    // 🔥 REALTIME: Simpan langsung ke Firestore
+    if(db && deviceId) {
+      console.log('🔥 Mengirim bukti deposit ke Firestore...');
+      await db.collection('gmt_deposits').doc(depositReq.id).set(depositReq);
+      console.log('✅ Bukti deposit tersimpan di Firestore: '+depositReq.id);
+    }
+    
+    // Local backup
     pendingDeposits.push(depositReq);
     save();
     updatePendingBadge();
+    
     stopTimer();
     document.getElementById('upload-sec').classList.remove('show');
     document.getElementById('qr-panel').classList.remove('show');
     document.getElementById('pay-success').classList.add('show');
     document.getElementById('pay-success').scrollIntoView({behavior:'smooth',block:'center'});
+    toast('✓ Bukti transfer terkirim! Admin akan segera mengkonfirmasi.');
   }catch(err){
-    console.error(err);errEl.textContent='✕ Gagal: '+(err.message||JSON.stringify(err));errEl.style.display='block';
+    console.error('❌ sendProof error:',err);
+    errEl.textContent='✕ Gagal: '+(err.message||JSON.stringify(err));
+    errEl.style.display='block';
   }finally{btn.disabled=false;btn.textContent='📤 Kirim Bukti'}
 }
 
@@ -1759,17 +1952,40 @@ document.getElementById('admin-overlay').addEventListener('click',e=>{if(e.targe
 document.getElementById('profile-upload-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeProfileUpload()});
 
 /* ══ INIT ══ */
-// 1️⃣ Load dari localStorage dulu (cepat, offline-first)
-load(); renderAll(); updateUserPill(); renderDepositGrid(); updateLockState(); updateSaldoDisplay(false); updatePendingBadge();
-
-// 2️⃣ Load dari Firestore (cloud sync)
+// 🔥 CLOUD-FIRST: Load dari Firestore dulu untuk saldo yang akurat
 loadFromFirestore().then(fromCloud => {
-  if (fromCloud) {
-    renderAll(); updateUserPill(); renderDepositGrid(); updateLockState();
-    updateSaldoDisplay(false); updatePendingBadge();
-    toast('☁ Data berhasil disinkronkan');
+  // Update dengan data Firestore (saldo yang valid)
+  console.log('☁️ loadFromFirestore selesai. fromCloud='+fromCloud);
+  
+  // Jika data ada di Firestore, pakai itu. Jika tidak, pakai localStorage
+  if(!fromCloud) {
+    console.log('⚠️ Firestore kosong, load dari localStorage');
+    load();
   }
-  // 3️⃣ Start realtime listener setelah load awal selesai
+  
+  // Render UI dengan data terbaru
+  renderAll(); 
+  updateUserPill(); 
+  renderDepositGrid(); 
+  updateLockState(); 
+  updateSaldoDisplay(false); 
+  updatePendingBadge();
+  
+  if(fromCloud) toast('☁ Data dimuat dari Firebase');
+  
+  // 3️⃣ Start realtime listener untuk auto-sync
+  startRealtimeSync();
+}).catch(err => {
+  console.error('❌ loadFromFirestore error:', err);
+  // Fallback ke localStorage
+  console.log('⚠️ Firestore error, load dari localStorage');
+  load(); 
+  renderAll(); 
+  updateUserPill(); 
+  renderDepositGrid(); 
+  updateLockState(); 
+  updateSaldoDisplay(false); 
+  updatePendingBadge();
   startRealtimeSync();
 });
 
